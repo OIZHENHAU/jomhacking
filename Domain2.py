@@ -127,9 +127,11 @@ def levenshtein_distance(s1, s2):
     return distances[-1]
 
 
-def is_almost_match(s1, s2, threshold=5):
+def is_almost_match(s1: str, s2: str, threshold=3):
+    s1 = s1.lower()
+    s2 = s2.lower()
     distance = levenshtein_distance(s1, s2)
-    print(distance)
+    # print(distance)
     return distance <= threshold
 
 
@@ -170,7 +172,7 @@ def ExtractDebtData(df: pd.DataFrame):
                                            1, 1,
                                            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
 
-    print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
+    # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
 
     # words_df = pd.DataFrame(words_to_search)
     # print(words_df)
@@ -180,22 +182,59 @@ def ExtractDebtData(df: pd.DataFrame):
     logistic_model = LogisticSGDModel()
     logistic_model.fit(X, y)
 
+    non_current_liabilities = False
+    current_liabilities = False
+
     for i in range(2, len(first_column)):
-        non_current_liabilities = False
-        current_liabilities = False
+
+        # print(non_current_liabilities, current_liabilities)
+
+        if (non_current_liabilities and current_liabilities) and not isinstance(first_column.loc[i], str):
+            break
 
         if not isinstance(first_column.loc[i], str):
             continue
 
         features = first_column.loc[i]
-        predicted_value = logistic_model.predict([features])
-        # print(features, predicted_value)
+        # print(features)
 
-        if predicted_value == 1:
-            curr_col = df.loc[i]
-            result_df = pd.concat([result_df, curr_col], axis=1)
+        if non_current_liabilities or current_liabilities:
+            # print("case 1")
+
+            if is_almost_match(features, "non current liabilities"):
+                # print("case 1a")
+                non_current_liabilities = not non_current_liabilities
+                continue
+
+            elif is_almost_match(features, "current liabilities"):
+                # print("case 1b")
+                current_liabilities = not current_liabilities
+                continue
+
+            else:
+                # print("case 1c")
+                predicted_value = logistic_model.predict([features])
+                # print(features, predicted_value)
+
+                if predicted_value == 1:
+                    curr_col = df.loc[i]
+                    result_df = pd.concat([result_df, curr_col], axis=1)
+
+                else:
+                    continue
+
+        elif is_almost_match(features, "non current liabilities"):
+            # print("case 2")
+            non_current_liabilities = not non_current_liabilities
+            continue
+
+        elif is_almost_match(features, "current liabilities"):
+            # print("case 3")
+            current_liabilities = not current_liabilities
+            continue
 
         else:
+            # print("case 4")
             continue
 
     return result_df.T
@@ -243,7 +282,7 @@ def ExtractCashData(df: pd.DataFrame):
                                            0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
 
-    print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
+    # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
 
     X = words_to_search['features']
     y = words_to_search['is_cash_related']
@@ -272,5 +311,3 @@ def ExtractCashData(df: pd.DataFrame):
 cash_df = ExtractCashData(df)
 print(cash_df)
 # LOL
-
-

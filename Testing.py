@@ -40,6 +40,7 @@ if is_almost_match(s1, s2):
 else:
     print("The strings do not almost match.")
 
+
 '''class CashDebtClassifier:
     def __init__(self, max_iter=1000, tol=1e-4):
         # Initialize components: TF-IDF Vectorizer, Label Encoder, and SGD Classifier
@@ -152,3 +153,5 @@ print("Prediction:", prediction)
 
     return prediction[0]
 '''
+
+
