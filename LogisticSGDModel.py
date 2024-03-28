@@ -21,7 +21,7 @@ class LogisticSGDModel:
         return self.model.predict(new_text_tfidf)
 
 
-words_to_search = {'features': ["cash and cash equivalent", "cash and bank balances", "cash at bank",
+'''words_to_search = {'features': ["cash and cash equivalent", "cash and bank balances", "cash at bank",
                                 "cash held under housing development accounts",
                                 "cash placed in conventional accounts and instruments",
                                 "cash", "deposit with licensed bank", "investment", "money market instrument",
@@ -44,10 +44,8 @@ words_to_search = {'features': ["cash and cash equivalent", "cash and bank balan
                                        0,
                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
 
-
 X = words_to_search['features']
 y = words_to_search['is_cash_related']
-
 
 cash_model = LogisticSGDModel()
 cash_model.fit(X, y)
@@ -55,3 +53,4 @@ cash_model.fit(X, y)
 new_text = ["cat"]
 predictions = cash_model.predict(new_text)
 # print(predictions)
+'''

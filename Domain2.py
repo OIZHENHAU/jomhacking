@@ -110,36 +110,30 @@ def ExtractIncomeData(df: pd.DataFrame):
 income_df = ExtractIncomeData(df)
 print(income_df)
 
-# LOGISTIC FUNCTION TO EXTRACT DATA
-'''def LogisticMLModel(new_features: str, words_df: pd.DataFrame):
-    X_train, X_test, y_train, y_test = train_test_split(words_df['features'], words_df['is_cash_related'],
-                                                        test_size=0.2,
-                                                        random_state=42)
 
-    # Vectorize text data using TF-IDF
-    tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-    X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)
-    X_test_tfidf = tfidf_vectorizer.transform(X_test)
+def levenshtein_distance(s1, s2):
+    if len(s1) > len(s2):
+        s1, s2 = s2, s1
 
-    # Train Logistic Regression model
-    logistic_regression = LogisticRegression()
-    logistic_regression.fit(X_train_tfidf, y_train)
-
-    # Evaluate model
-    y_pred = logistic_regression.predict(X_test_tfidf)
-    accuracy = accuracy_score(y_test, y_pred)
-    # print("Accuracy of the model is:", accuracy)
-
-    # Example prediction
-    new_text = [new_features]
-    new_text_tfidf = tfidf_vectorizer.transform(new_text)
-    prediction = logistic_regression.predict(new_text_tfidf)
-    # print("Prediction of the current example is:", prediction)
-
-    return prediction[0]
-'''
+    distances = range(len(s1) + 1)
+    for index2, char2 in enumerate(s2):
+        new_distances = [index2 + 1]
+        for index1, char1 in enumerate(s1):
+            if char1 == char2:
+                new_distances.append(distances[index1])
+            else:
+                new_distances.append(1 + min((distances[index1], distances[index1 + 1], new_distances[-1])))
+        distances = new_distances
+    return distances[-1]
 
 
+def is_almost_match(s1, s2, threshold=5):
+    distance = levenshtein_distance(s1, s2)
+    print(distance)
+    return distance <= threshold
+
+
+# Extract the data from the dataset related to debt from current & non-current liabilities
 def ExtractDebtData(df: pd.DataFrame):
     cols1 = df.columns
     cols2 = df.loc[0]
@@ -163,7 +157,7 @@ def ExtractDebtData(df: pd.DataFrame):
                                     "bridging loans",
                                     "capital securities", "commercial papers", "commodity financing",
                                     "conventional bonds", "debentures",
-                                    "deferred liability", "export credit refinancing", "liability",
+                                    "deferred liability", "export credit refinancing",
                                     "hire purchase payables",
                                     "invoice financing",
                                     "lease liabilities", "loan stocks",
@@ -173,7 +167,7 @@ def ExtractDebtData(df: pd.DataFrame):
                                     "Profit/(Loss) Before Tax",
                                     "(Loss)/Profit Before Tax"],
                        'is_cash_related': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1,
-                                           1, 1, 1,
+                                           1, 1,
                                            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
 
     print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
@@ -187,6 +181,8 @@ def ExtractDebtData(df: pd.DataFrame):
     logistic_model.fit(X, y)
 
     for i in range(2, len(first_column)):
+        non_current_liabilities = False
+        current_liabilities = False
 
         if not isinstance(first_column.loc[i], str):
             continue
@@ -210,7 +206,7 @@ print(debt_df)
 print()
 
 
-# EXAMPLE FOR EXTRACT DEBT WITH SIMPLE STEPS
+# Extract data from the dataset related to cash
 def ExtractCashData(df: pd.DataFrame):
     cols1 = df.columns
     cols2 = df.loc[0]
@@ -234,7 +230,7 @@ def ExtractCashData(df: pd.DataFrame):
                                     "bridging loans",
                                     "capital securities", "commercial papers", "commodity financing",
                                     "conventional bonds", "debentures",
-                                    "deferred liability", "export credit refinancing", "liability",
+                                    "deferred liability", "export credit refinancing",
                                     "hire purchase payables",
                                     "invoice financing",
                                     "lease liabilities", "loan stocks",
@@ -244,7 +240,7 @@ def ExtractCashData(df: pd.DataFrame):
                                     "Profit/(Loss) Before Tax",
                                     "(Loss)/Profit Before Tax"],
                        'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0,
+                                           0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
 
     print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
@@ -262,7 +258,6 @@ def ExtractCashData(df: pd.DataFrame):
 
         features = first_column.loc[i]
         predicted_value = logistic_model.predict([features])
-        # print(features, predicted_value)
 
         if predicted_value == 1:
             curr_col = df.loc[i]
@@ -277,3 +272,5 @@ def ExtractCashData(df: pd.DataFrame):
 cash_df = ExtractCashData(df)
 print(cash_df)
 # LOL
+
+

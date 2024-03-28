@@ -9,7 +9,38 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
 
 
-class CashDebtClassifier:
+def levenshtein_distance(s1, s2):
+    if len(s1) > len(s2):
+        s1, s2 = s2, s1
+
+    distances = range(len(s1) + 1)
+    for index2, char2 in enumerate(s2):
+        new_distances = [index2 + 1]
+        for index1, char1 in enumerate(s1):
+            if char1 == char2:
+                new_distances.append(distances[index1])
+            else:
+                new_distances.append(1 + min((distances[index1], distances[index1 + 1], new_distances[-1])))
+        distances = new_distances
+    return distances[-1]
+
+
+def is_almost_match(s1, s2, threshold=5):
+    distance = levenshtein_distance(s1, s2)
+    print(distance)
+    return distance <= threshold
+
+
+# Test
+s1 = "non current liabilities".lower()
+s2 = "non-Current-liability".lower()
+
+if is_almost_match(s1, s2):
+    print("The strings almost match.")
+else:
+    print("The strings do not almost match.")
+
+'''class CashDebtClassifier:
     def __init__(self, max_iter=1000, tol=1e-4):
         # Initialize components: TF-IDF Vectorizer, Label Encoder, and SGD Classifier
         self.tfidf_vectorizer = TfidfVectorizer(stop_words='english')
@@ -54,7 +85,7 @@ predictions = cash_debt_classifier.predict(new_texts)
 # Output predictions
 for text, prediction in zip(new_texts, predictions):
     print(f"'{text}' is classified as '{prediction}'")
-
+'''
 
 # Sample labeled dataset
 '''data = {'text': ['I withdrew cash from the ATM',
@@ -90,4 +121,34 @@ new_text = ["I need to get some money from the bank"]
 new_text_tfidf = tfidf_vectorizer.transform(new_text)
 prediction = logistic_regression.predict(new_text_tfidf)
 print("Prediction:", prediction)
+'''
+
+
+# LOGISTIC FUNCTION TO EXTRACT DATA
+'''def LogisticMLModel(new_features: str, words_df: pd.DataFrame):
+    X_train, X_test, y_train, y_test = train_test_split(words_df['features'], words_df['is_cash_related'],
+                                                        test_size=0.2,
+                                                        random_state=42)
+
+    # Vectorize text data using TF-IDF
+    tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+    X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)
+    X_test_tfidf = tfidf_vectorizer.transform(X_test)
+
+    # Train Logistic Regression model
+    logistic_regression = LogisticRegression()
+    logistic_regression.fit(X_train_tfidf, y_train)
+
+    # Evaluate model
+    y_pred = logistic_regression.predict(X_test_tfidf)
+    accuracy = accuracy_score(y_test, y_pred)
+    # print("Accuracy of the model is:", accuracy)
+
+    # Example prediction
+    new_text = [new_features]
+    new_text_tfidf = tfidf_vectorizer.transform(new_text)
+    prediction = logistic_regression.predict(new_text_tfidf)
+    # print("Prediction of the current example is:", prediction)
+
+    return prediction[0]
 '''
