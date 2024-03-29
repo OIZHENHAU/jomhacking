@@ -1,4 +1,13 @@
+import numpy as np
 import pandas as pd
+import re
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import PyPDF2
+import tabula
+from PyPDF2 import PdfReader
+from sklearn.model_selection import train_test_split
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -7,151 +16,166 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import SGDClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
+from tabula.io import read_pdf
 
 
-def levenshtein_distance(s1, s2):
-    if len(s1) > len(s2):
-        s1, s2 = s2, s1
+# Function to extract text from PDF
+def extract_text_from_pdf(pdf: PyPDF2.PdfReader):
+    text = ""
+    totalPages = len(pdf.pages)
 
-    distances = range(len(s1) + 1)
-    for index2, char2 in enumerate(s2):
-        new_distances = [index2 + 1]
-        for index1, char1 in enumerate(s1):
-            if char1 == char2:
-                new_distances.append(distances[index1])
-            else:
-                new_distances.append(1 + min((distances[index1], distances[index1 + 1], new_distances[-1])))
-        distances = new_distances
-    return distances[-1]
+    for i in range(totalPages):
+        page = pdf.pages[i]
+
+        text += page.extract_text().lower()
+        text += "\n"
+
+    return text
 
 
-def is_almost_match(s1, s2, threshold=5):
-    distance = levenshtein_distance(s1, s2)
-    print(distance)
-    return distance <= threshold
+# Preprocessing function
+def preprocess_text(text):
+    text = text.lower()
+    text = re.sub(r'[^\w\s]', '', text)
+    return text
 
 
-# Test
-s1 = "non current liabilities".lower()
-s2 = "non-Current-liability".lower()
+reader = PdfReader("Financial_Statements.pdf")
 
-if is_almost_match(s1, s2):
-    print("The strings almost match.")
-else:
-    print("The strings do not almost match.")
+# Sample input string
+input_string1 = "financial"
+input_string2 = "gambling"
 
+# Extract text from PDF
+pdf_text = extract_text_from_pdf(reader)
 
-'''class CashDebtClassifier:
-    def __init__(self, max_iter=1000, tol=1e-4):
-        # Initialize components: TF-IDF Vectorizer, Label Encoder, and SGD Classifier
-        self.tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-        self.label_encoder = LabelEncoder()
-        self.model = make_pipeline(self.tfidf_vectorizer,
-                                   SGDClassifier(loss='log', max_iter=max_iter, tol=tol))
+# Preprocess text
+pdf_text = preprocess_text(pdf_text)
+# print(pdf_text)
+arr_text = pdf_text.split()
 
-    def fit(self, X, y):
-        # Encode labels
-        y_encoded = self.label_encoder.fit_transform(y)
-        self.model.fit(X, y_encoded)
+# print(len(pdf_text), len(arr))
 
-    def predict(self, new_texts):
-        # Predict and return the label names
-        predictions = self.model.predict(new_texts)
-        return self.label_encoder.inverse_transform(predictions)
+input_string1 = preprocess_text(input_string1)
+input_string2 = preprocess_text(input_string2)
 
 
-# Example usage:
-# Sample labeled dataset with 'cash', 'debt', and 'unrelated' categories
-data = {'text': ['I withdrew cash from the ATM',  # cash
-                 'I paid off my credit card debt',  # debt
-                 'I received $100 as a cashback reward',  # cash
-                 'I have a mortgage debt',  # debt
-                 'I deposited a cheque into my bank account',  # unrelated
-                 'I bought groceries'],  # unrelated
-        'category': ['cash', 'debt', 'cash', 'debt', 'unrelated', 'unrelated']}
+# Label data
+def isInPDFFile(str1: str, str2: str):
+    label = 0
 
-X = data['text']
-y = data['category']
+    if str1 in str2:
+        label = 1
 
-# Initialize and train the model
-cash_debt_classifier = CashDebtClassifier()
-cash_debt_classifier.fit(X, y)
+    return label
 
-# Predictions
-new_texts = ["I need to withdraw some cash",
-             "I'm considering a loan for a new car",
-             "He paid for dinner with his credit card"]
-predictions = cash_debt_classifier.predict(new_texts)
 
-# Output predictions
-for text, prediction in zip(new_texts, predictions):
-    print(f"'{text}' is classified as '{prediction}'")
-'''
+label1 = isInPDFFile(input_string1, pdf_text)
+label2 = isInPDFFile(input_string2, pdf_text)
 
-# Sample labeled dataset
-'''data = {'text': ['I withdrew cash from the ATM',
-                 'I made a payment with my credit card',
-                 'I received $100 as a cashback reward',
-                 'I deposited a cheque into my bank account'],
-        'is_cash_related': [1, 0, 1, 0]}  # 1 for cash-related, 0 otherwise
 
-df = pd.DataFrame(data)
-print(df)
+# A simple tokenization and encoding function
+def text_to_tensor(text, vocab=None):
+    # Tokenize the text (simple split by space, consider using more sophisticated tokenization)
+    tokens = text.split()
+
+    # If no vocab is provided, create one
+    if vocab is None:
+        vocab = {token: i for i, token in enumerate(sorted(set(tokens)))}
+
+    # Encode tokens using vocab
+    encoded = [vocab[token] for token in tokens if token in vocab]
+
+    # Convert to tensor
+    tensor = torch.tensor(encoded, dtype=torch.float)
+
+    return tensor, vocab
+
+
+# Convert text to tensor
+tensor1, vocab1 = text_to_tensor(pdf_text)
+
+print(tensor1)
+print(len(tensor1))
 print()
 
-# Split data into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(df['text'], df['is_cash_related'], test_size=0.2, random_state=42)
 
-# Vectorize text data using TF-IDF
-tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)
-X_test_tfidf = tfidf_vectorizer.transform(X_test)
+# Define Neural Network architecture
+class SimpleNN(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(SimpleNN, self).__init__()
+        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.fc2 = nn.Linear(hidden_size, output_size)
+        self.sigmoid = nn.Sigmoid()
 
-# Train Logistic Regression model
-logistic_regression = LogisticRegression()
-logistic_regression.fit(X_train_tfidf, y_train)
-
-# Evaluate model
-y_pred = logistic_regression.predict(X_test_tfidf)
-print(y_pred, y_test)
-accuracy = accuracy_score(y_test, y_pred)
-print("Accuracy:", accuracy)
-
-# Example prediction
-new_text = ["I need to get some money from the bank"]
-new_text_tfidf = tfidf_vectorizer.transform(new_text)
-prediction = logistic_regression.predict(new_text_tfidf)
-print("Prediction:", prediction)
-'''
+    def forward(self, x):
+        x = torch.relu(self.fc1(x))
+        x = self.sigmoid(self.fc2(x))
+        return x
 
 
-# LOGISTIC FUNCTION TO EXTRACT DATA
-'''def LogisticMLModel(new_features: str, words_df: pd.DataFrame):
-    X_train, X_test, y_train, y_test = train_test_split(words_df['features'], words_df['is_cash_related'],
-                                                        test_size=0.2,
-                                                        random_state=42)
+# Define training data
+# Assume you have X_train and y_train prepared from labeled data
 
-    # Vectorize text data using TF-IDF
-    tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-    X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)
-    X_test_tfidf = tfidf_vectorizer.transform(X_test)
+# Define model parameters
+input_size = len(tensor1)  # Length of PDF text
+hidden_size = 128
+output_size = 1
 
-    # Train Logistic Regression model
-    logistic_regression = LogisticRegression()
-    logistic_regression.fit(X_train_tfidf, y_train)
+# Initialize model
+model = SimpleNN(input_size, hidden_size, output_size)
 
-    # Evaluate model
-    y_pred = logistic_regression.predict(X_test_tfidf)
-    accuracy = accuracy_score(y_test, y_pred)
-    # print("Accuracy of the model is:", accuracy)
+# Define loss function and optimizer
+criterion = nn.BCELoss()
+optimizer = optim.SGD(model.parameters(), lr=0.01)
 
-    # Example prediction
-    new_text = [new_features]
-    new_text_tfidf = tfidf_vectorizer.transform(new_text)
-    prediction = logistic_regression.predict(new_text_tfidf)
-    # print("Prediction of the current example is:", prediction)
+# Training loop
+epochs = 10
+for epoch in range(epochs):
+    # Convert data to tensors
+    inputs = tensor1
+    labels = torch.Tensor([label1])
 
-    return prediction[0]
-'''
+    # Zero the gradients
+    optimizer.zero_grad()
+
+    # Forward pass
+    outputs = model(inputs)
+
+    # Calculate loss
+    loss = criterion(outputs, labels)
+
+    # Backward pass
+    loss.backward()
+
+    # Update weights
+    optimizer.step()
+
+    # print(f"Epoch [{epoch + 1}/{epochs}], Loss: {loss.item()}")
 
 
+def predict_next_input(model: nn.Module, tensor: torch.Tensor, input_string: str):
+    # Preprocess the input string
+    input_string = preprocess_text(input_string)
+
+    # Convert the input string to a tensor
+    input_tensor = tensor
+
+    # Perform forward pass to get predictions
+    with torch.no_grad():
+        prediction = model(tensor)
+
+        # Convert the prediction to a probability (0 or 1)
+        print(prediction.item())
+        predicted_label = 1 if prediction.item() >= 0.5 else 0
+
+        # Output the prediction
+        if predicted_label == 1:
+            print("The text in the PDF matches the input string.")
+        else:
+            print("The text in the PDF does not match the input string.")
+
+
+
+# Call the predict_next_input function
+# predict_next_input(model, tensor1, "")

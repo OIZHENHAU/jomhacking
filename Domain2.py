@@ -1,7 +1,11 @@
 import math
-
 import PyPDF2
 import numpy as np
+import tabula
+import re
+import pandas as pd
+import torch
+import torch.nn as nn
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from sklearn.model_selection import train_test_split
@@ -9,29 +13,61 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from PyPDF2 import PdfReader
-import tabula
 from tabula.io import read_pdf
-import pandas as pd
-
 from LogisticSGDModel import LogisticSGDModel
+from NeuralNetworkModel import NeuralNetworkModel
 
+# Set the output in the terminal with max row and column
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
+# Extrac the text from the page of the pdf file
 reader = PdfReader("Financial_Statements.pdf")
 page = reader.pages[2]
-# print(page.extract_text())
+text = page.extract_text()
+# print(text)
 
-
-totalPages = len(reader.pages)
+# To get the total pages from the PDF file
+total_Pages = len(reader.pages)
 # print(f"Total Pages: {totalPages}")
 
+
+# Read the specific pages from the pdf file (exp: pg 11)
 tables = tabula.io.read_pdf("Financial_Statements.pdf", stream=True, pages="11")
 
 
-# print(tables[0])
+# Extract every page in the PDF file
+def extract_text_from_pdf(pdf_path: PyPDF2.PdfReader):
+    text = ""
+    totalPages = len(pdf_path.pages)
+
+    for i in range(totalPages):
+        page = pdf_path.pages[i]
+
+        text += page.extract_text()
+        text += "\n"
+
+    return text
 
 
+# Preprocessing function
+def preprocess_text(text):
+    text = text.lower()
+    text = re.sub(r'[^\w\s]', '', text)
+    return text
+
+
+# Check if the current string contains in another string
+def isInPDFFile(str1: str, str2: str):
+    label = 0
+
+    if str1 in str2:
+        label = 1
+
+    return label
+
+
+# Read the given pages in the PDF file
 def ReadTablePages(pdf: PyPDF2.PdfReader, arr: np.ndarray):
     length_arr = len(arr)
     pages_label = str(arr[0])
@@ -53,6 +89,7 @@ df = ReadTablePages("Financial_Statements.pdf", np.array([11, 12]))
 
 # print(df)
 
+# Replace the unnamned column into specific label in the dataset
 def ReplaceAndGetCategory(df: pd.DataFrame):
     # df.columns = [col if not col.startswith('Unnamed') else '' for col in df.columns]
     cols = list(df.columns)
@@ -68,11 +105,10 @@ def ReplaceAndGetCategory(df: pd.DataFrame):
 # print(ReplaceAndGetCategory(df))
 df = ReplaceAndGetCategory(df)
 print(df)
-# first_row = df.loc[2]
-# print(first_row)
 print()
 
 
+# Extract the data related to income from the dataset
 def ExtractIncomeData(df: pd.DataFrame):
     cols1 = df.columns
     cols2 = df.loc[0]
@@ -311,4 +347,7 @@ def ExtractCashData(df: pd.DataFrame):
 cash_df = ExtractCashData(df)
 print(cash_df)
 # LOL
-# along
+
+
+
+
