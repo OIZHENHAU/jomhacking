@@ -104,7 +104,7 @@ def ReplaceAndGetCategory(df: pd.DataFrame):
 
 # print(ReplaceAndGetCategory(df))
 df = ReplaceAndGetCategory(df)
-print(df)
+# print(df)
 print()
 
 
@@ -121,8 +121,6 @@ def ExtractIncomeData(df: pd.DataFrame):
     words_to_search = ["revenue", "profit before tax", "loss before tax", "Interest Income", "Finance Income",
                        "financial year ended", "Interest Income / Finance Income", "Profit/(Loss) Before Tax",
                        "(Loss)/Profit Before Tax"]
-
-    print(words_to_search[7].lower())
 
     for i in range(2, len(first_column)):
         # print(first_column.loc[i], i)
@@ -144,7 +142,9 @@ def ExtractIncomeData(df: pd.DataFrame):
 
 
 income_df = ExtractIncomeData(df)
-print(income_df)
+
+
+# print(income_df)
 
 
 def levenshtein_distance(s1, s2):
@@ -188,7 +188,7 @@ def ExtractDebtData(df: pd.DataFrame):
                                     "other cash equivalents",
                                     "deposits", "investment in cash funds", "resale agreement", "short term deposits",
                                     "short term funds",
-                                    "short term investments", "unit trust funds", "total assets", "assets", "equity",
+                                    "short term investments", "unit trust funds", "total assets", "assets",
                                     "borrowing",
                                     "bank borrowings",
                                     "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
@@ -203,10 +203,15 @@ def ExtractDebtData(df: pd.DataFrame):
                                     "Interest Income", "Finance Income",
                                     "financial year ended", "Interest Income / Finance Income",
                                     "Profit/(Loss) Before Tax",
-                                    "(Loss)/Profit Before Tax"],
-                       'is_cash_related': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1,
-                                           1, 1,
-                                           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
+                                    "(Loss)/Profit Before Tax", "equity", "equity investment", "stocks", "bonds",
+                                    "real estate", "commodities", "collectibles", "mutual funds",
+                                    "exchange-traded funds",
+                                    "peer-to-peer lending", "cryptocurrencies", "hedge funds",
+                                    "investments in subsidiaries", "investments in associates"],
+                       'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+                                           0, 0,
+                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
+                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3]}
 
     # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
 
@@ -252,7 +257,7 @@ def ExtractDebtData(df: pd.DataFrame):
                 predicted_value = logistic_model.predict([features])
                 # print(features, predicted_value)
 
-                if predicted_value == 1:
+                if predicted_value == 0:
                     curr_col = df.loc[i]
                     result_df = pd.concat([result_df, curr_col], axis=1)
 
@@ -277,7 +282,7 @@ def ExtractDebtData(df: pd.DataFrame):
 
 
 debt_df = ExtractDebtData(df)
-print(debt_df)
+# print(debt_df)
 print()
 
 
@@ -298,7 +303,7 @@ def ExtractCashData(df: pd.DataFrame):
                                     "other cash equivalents",
                                     "deposits", "investment in cash funds", "resale agreement", "short term deposits",
                                     "short term funds",
-                                    "short term investments", "unit trust funds", "total assets", "assets", "equity",
+                                    "short term investments", "unit trust funds", "total assets", "assets",
                                     "borrowing",
                                     "bank borrowings",
                                     "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
@@ -313,10 +318,15 @@ def ExtractCashData(df: pd.DataFrame):
                                     "Interest Income", "Finance Income",
                                     "financial year ended", "Interest Income / Finance Income",
                                     "Profit/(Loss) Before Tax",
-                                    "(Loss)/Profit Before Tax"],
-                       'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+                                    "(Loss)/Profit Before Tax", "equity", "equity investment", "stocks", "bonds",
+                                    "real estate", "commodities", "collectibles", "mutual funds",
+                                    "exchange-traded funds",
+                                    "peer-to-peer lending", "cryptocurrencies", "hedge funds",
+                                    "investments in subsidiaries", "investments in associates"],
+                       'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
                                            0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
+                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
+                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3]}
 
     # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
 
@@ -345,9 +355,82 @@ def ExtractCashData(df: pd.DataFrame):
 
 
 cash_df = ExtractCashData(df)
-print(cash_df)
+# print(cash_df)
 # LOL
+print()
 
 
+# Calculate the percentage of the cash against total assets
+def ComputeCashRatio(df: pd.DataFrame):
+    cols0 = df.loc[0]
+    cols1 = df.loc[1]
+    total_assets = df.loc[0]
+    total_assets_index = 0
+
+    for index, row in df.iloc[2:].iterrows():
+
+        if is_almost_match(row[0], "total assets"):
+            total_assets_index = index
+
+    new_df = df.drop(columns=df.columns[df.columns.str.contains('Unnamed')])
+    new_df = new_df.drop(0)
+    new_df = new_df.drop(1)
+
+    new_df = new_df.fillna(0)
+    new_df = new_df.replace('-', 0)
+    # print(new_df)
+
+    # Remove brackets from elements in all columns
+    new_df = new_df.applymap(lambda x: str(x).replace('(', '').replace(')', '').replace(',', ''))
+
+    total_assets = new_df.loc[total_assets_index]
+    total_assets_list = np.array(total_assets.values.tolist())
+    total_assets_list = total_assets_list.astype(int)
+
+    new_df = new_df.drop(total_assets_index)
+
+    # Convert the DataFrame into a list of NumPy arrays
+    numpy_arrays = np.array(new_df.values.tolist())
+    numpy_arrays = numpy_arrays.astype(int)
+
+    sum_up_array = np.sum(numpy_arrays, axis=0)
+    percentage_result = sum_up_array / total_assets_list * 100
+
+    return percentage_result, total_assets_list
 
 
+percentage_result, total_assets = ComputeCashRatio(cash_df)
+
+
+# print(total_assets)
+# print()
+# print(percentage_result)
+
+
+# Calculate the percentage of the debt against total assets
+def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
+    cols0 = df.loc[0]
+    cols1 = df.loc[1]
+
+    new_df = df.drop(columns=df.columns[df.columns.str.contains('Unnamed')])
+    new_df = new_df.drop(0)
+    new_df = new_df.drop(1)
+
+    new_df = new_df.fillna(0)
+    new_df = new_df.replace('-', 0)
+
+    # Remove brackets from elements in all columns
+    new_df = new_df.applymap(lambda x: str(x).replace('(', '').replace(')', '').replace(',', ''))
+
+    numpy_arrays = np.array(new_df.values.tolist())
+    numpy_arrays = numpy_arrays.astype(int)
+    # print(numpy_arrays)
+
+    sum_up_array = np.sum(numpy_arrays, axis=0)
+    percentage_result = sum_up_array / total_assets
+
+    return percentage_result * 100
+
+
+percentage_debt = ComputeDebtRatio(debt_df, total_assets)
+# print(percentage_debt)

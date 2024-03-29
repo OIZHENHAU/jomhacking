@@ -20,7 +20,7 @@ from tabula.io import read_pdf
 
 
 # Function to extract text from PDF
-def extract_text_from_pdf(pdf: PyPDF2.PdfReader):
+'''def extract_text_from_pdf(pdf: PyPDF2.PdfReader):
     text = ""
     totalPages = len(pdf.pages)
 
@@ -179,3 +179,49 @@ def predict_next_input(model: nn.Module, tensor: torch.Tensor, input_string: str
 
 # Call the predict_next_input function
 # predict_next_input(model, tensor1, "")
+'''
+
+# Assuming df is your DataFrame containing the data
+data = {
+    "col1": [1, 2, "(14324)", 4],
+    "col2": ["string", 6, 7, 8],
+    "col3": [9, 10, 11, "string"]
+}
+
+df = pd.DataFrame(data)
+
+# Check if any value in each row is a string
+contains_string = df.apply(lambda row: row.astype(str).str.contains('[a-zA-Z]').any(), axis=1)
+
+print("Rows containing string values:")
+print(df[contains_string])
+
+
+# Assuming df is your DataFrame containing the data
+data = {
+    "col1": [1, 2, "(14324)", 4],
+    "col2": ["(14324)", 6, 7, 8],
+    "col3": [9, 10, 11, "(14324)"]
+}
+
+df = pd.DataFrame(data)
+
+# Remove brackets from elements in all columns
+df = df.applymap(lambda x: str(x).replace('(', '').replace(')', ''))
+
+print("DataFrame after removing brackets:")
+print(df)
+
+
+# Example 2D NumPy array of type string
+array_of_strings = np.array([["1", "2", "3"],
+                             ["4", "5", "6"],
+                             ["7", "8", "9"]])
+
+# Convert the array of strings to integers
+array_of_integers = array_of_strings.astype(int)
+
+print("2D array of integers:")
+print(array_of_integers)
+
+
