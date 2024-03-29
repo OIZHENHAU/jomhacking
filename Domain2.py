@@ -404,7 +404,7 @@ percentage_result, total_assets = ComputeCashRatio(cash_df)
 
 # print(total_assets)
 # print()
-# print(percentage_result)
+print(percentage_result)
 
 
 # Calculate the percentage of the debt against total assets
@@ -433,4 +433,5 @@ def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
 
 
 percentage_debt = ComputeDebtRatio(debt_df, total_assets)
-# print(percentage_debt)
+print(percentage_debt)
+
