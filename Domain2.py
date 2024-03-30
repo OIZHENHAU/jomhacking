@@ -4,6 +4,7 @@ import numpy as np
 import tabula
 import re
 import pandas as pd
+import json
 import torch
 import torch.nn as nn
 from nltk.tokenize import word_tokenize
@@ -58,6 +59,11 @@ def preprocess_text(text):
     text = text.lower()
     text = re.sub(r'[^\w\s]', '', text)
     return text
+
+
+def convertJsonToDF(json_df: json):
+    df = pd.read_json(json_df)
+    return df
 
 
 # Check if the current string contains in another string
@@ -119,7 +125,8 @@ def ReadTablePages(pdf: PyPDF2.PdfReader, arr: np.ndarray):
 
 # Get the data from the pdf file basd on pages.
 df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16, 17, 18, 19, 20]))
-# print(df)
+json_str = df.to_json(orient='records')
+
 income_statement_df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16]))
 
 
@@ -195,7 +202,6 @@ words_to_search = {'features': ["cash and cash equivalent", "cash and bank balan
                                        5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
                                        5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]}
 
-
 # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
 
 # words_df = pd.DataFrame(words_to_search)
@@ -242,13 +248,16 @@ def ExtractIncomeData(df: pd.DataFrame, words_to_search: dict):
         else:
             continue
 
-    return result_df.T, revenue_df.T
+    json_result_df = result_df.T.to_json(orient='records')
+    json_revenue_df = revenue_df.T.to_json(orient='records')
+
+    return json_result_df, json_revenue_df
 
 
-income_df, revenue_df = ExtractIncomeData(income_statement_df, words_to_search)
-# print(income_df)
+json_income_df, json_revenue_df = ExtractIncomeData(income_statement_df, words_to_search)
+# print(json_income_df)
 # print()
-# print(revenue_df)
+# print(json_revenue_df)
 print()
 
 
@@ -325,10 +334,11 @@ def ExtractDebtData(df: pd.DataFrame, words_to_search: dict):
             # print("case 4")
             continue
 
-    return result_df.T
+    json_result_df = result_df.T.to_json(orient='records')
+    return json_result_df
 
 
-debt_df = ExtractDebtData(df, words_to_search)
+json_debt_df = ExtractDebtData(df, words_to_search)
 # print(debt_df)
 print()
 
@@ -365,17 +375,23 @@ def ExtractCashData(df: pd.DataFrame, words_to_search: dict):
         else:
             continue
 
-    return result_df.T
+    json_result_df = result_df.T.to_json(orient='records')
+    return json_result_df
 
 
-cash_df = ExtractCashData(df, words_to_search)
-# print(cash_df)
+json_cash_df = ExtractCashData(df, words_to_search)
+# print(json_cash_df)
 # LOL
 print()
+
+cash_df = convertJsonToDF(json_cash_df)
+debt_df = convertJsonToDF(json_debt_df)
 
 
 # Calculate the percentage of the cash against total assets <= 33%
 def ComputeCashRatio(df: pd.DataFrame):
+    cols = df.columns
+    columns_to_remove = [col for col in df.columns if not 'Unnamed' in col]
     total_assets = pd.DataFrame()
     total_assets_index = 0
 
@@ -408,16 +424,29 @@ def ComputeCashRatio(df: pd.DataFrame):
     sum_up_array = np.sum(numpy_arrays, axis=0)
     percentage_result = sum_up_array / total_assets_list * 100
 
-    return percentage_result, total_assets_list
+    '''total_assets_df = pd.DataFrame(total_assets_list, index=columns_to_remove)
+    total_assets_df = total_assets_df.T
+    json_total_assets = total_assets_df.to_json(orient='records')
+    '''
+
+    percentage_result_df = pd.DataFrame(percentage_result, index=columns_to_remove)
+    percentage_result_df = percentage_result_df.T
+    json_percentage_result = percentage_result_df.to_json(orient='records')
+
+    return json_percentage_result, total_assets_list
 
 
-percentage_result, total_assets_list = ComputeCashRatio(cash_df)
-# print(percentage_result)
+json_percentage_result, total_assets_list = ComputeCashRatio(cash_df)
+# print(json_percentage_result)
 print()
+# print(json_total_assets)
+
 
 
 # Calculate the percentage of the debt against total assets <= 33%
 def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
+    cols = df.columns
+    columns_to_remove = [col for col in df.columns if not 'Unnamed' in col]
     new_df = df.drop(columns=df.columns[df.columns.str.contains('Unnamed')])
 
     new_df = new_df.fillna(0.0)
@@ -431,13 +460,17 @@ def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
     # print(numpy_arrays)
 
     sum_up_array = np.sum(numpy_arrays, axis=0)
-    percentage_result = sum_up_array / total_assets
+    percentage_result = sum_up_array / total_assets * 100
 
-    return percentage_result * 100
+    percentage_result_df = pd.DataFrame(percentage_result, index=columns_to_remove)
+    percentage_result_df = percentage_result_df.T
+    json_percentage_result = percentage_result_df.to_json(orient='records')
+
+    return json_percentage_result
 
 
-percentage_debt = ComputeDebtRatio(debt_df, total_assets_list)
-# print(percentage_debt)
+json_percentage_debt = ComputeDebtRatio(debt_df, total_assets_list)
+# print(json_percentage_debt)
 
 
 def Extract5BenchMark(df: pd.DataFrame, words_to_search: dict):
@@ -467,11 +500,12 @@ def Extract5BenchMark(df: pd.DataFrame, words_to_search: dict):
         else:
             continue
 
-    return result_df.T
+    json_result_df = result_df.T.to_json(orient='records')
+    return json_result_df
 
 
-benchmark_5 = Extract5BenchMark(df, words_to_search)
-# print(benchmark_5)
+json_benchmark_5 = Extract5BenchMark(df, words_to_search)
+print(json_benchmark_5)
 print()
 
 
@@ -502,8 +536,9 @@ def Extract20BenchMark(df: pd.DataFrame, words_to_search: dict):
         else:
             continue
 
-    return result_df.T
+    json_result_df = result_df.T.to_json(orient='records')
+    return json_result_df
 
 
-benchmark_20 = Extract20BenchMark(df, words_to_search)
-# print(benchmark_20)
+json_benchmark_20 = Extract20BenchMark(df, words_to_search)
+# print(json_benchmark_20)

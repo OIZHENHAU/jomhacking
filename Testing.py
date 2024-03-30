@@ -286,3 +286,26 @@ print(df['A'])
 
 # Export the DataFrame to an Excel file
 # df.to_excel('output.xlsx', index=False)
+
+
+# Example DataFrame
+data = {
+    'A': [1, 2, 3],
+    'Unnamed_1': [4, 5, 6],
+    'Unnamed_2': [7, 8, 9],
+    'B': [10, 11, 12]
+}
+df = pd.DataFrame(data)
+
+# Display the original DataFrame
+print("Original DataFrame:")
+print(df)
+
+# Remove columns containing "Unnamed"
+columns_to_remove = [col for col in df.columns if not 'Unnamed' in col]
+print(columns_to_remove)
+df_filtered = df.drop(columns=columns_to_remove)
+
+# Display the DataFrame after removing columns
+print("\nDataFrame after removing columns containing 'Unnamed':")
+print(df_filtered)
