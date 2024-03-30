@@ -66,6 +66,11 @@ def convertJsonToDF(json_df: json):
     return df
 
 
+def convertDFToNumpy(df: pd.DataFrame):
+    arr = df.values
+    return arr
+
+
 # Check if the current string contains in another string
 def isInPDFFile(str1: str, str2: str):
     label = 0
@@ -439,8 +444,9 @@ def ComputeCashRatio(df: pd.DataFrame):
 json_percentage_result, total_assets_list = ComputeCashRatio(cash_df)
 # print(json_percentage_result)
 print()
-# print(json_total_assets)
 
+
+# print(json_total_assets)
 
 
 # Calculate the percentage of the debt against total assets <= 33%
@@ -470,6 +476,8 @@ def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
 
 
 json_percentage_debt = ComputeDebtRatio(debt_df, total_assets_list)
+
+
 # print(json_percentage_debt)
 
 
