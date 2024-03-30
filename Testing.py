@@ -237,3 +237,17 @@ rounded_array_2d = np.round(float_array_2d, 2)
 print(rounded_array_2d)
 
 
+# Creating a sample DataFrame
+data = {
+    'Name': ['John', 'Anna', 'Peter', 'Linda'],
+    'Age': [28, 34, 29, 32],
+    'City': ['New York', 'Paris', 'Berlin', 'London']
+}
+df = pd.DataFrame(data)
+
+# Converting the DataFrame to JSON
+json_str = df.to_json(orient='records')
+
+print(json_str)
+
+

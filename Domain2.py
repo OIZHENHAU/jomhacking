@@ -133,61 +133,59 @@ def ReplaceAndGetCategory(df: pd.DataFrame):
 # print(df)
 # print()
 
+words_to_search = {'features': ["cash and cash equivalent", "cash and bank balances", "cash at bank",
+                                "cash held under housing development accounts",
+                                "cash placed in conventional accounts and instruments",
+                                "cash", "deposit with licensed bank", "investment", "money market instrument",
+                                "other cash equivalents",
+                                "deposits", "investment in cash funds", "resale agreement", "short term deposits",
+                                "short term funds",
+                                "short term investments", "unit trust funds", "total assets", "assets",
+                                "borrowing", "short term borrowings",
+                                "bank borrowings",
+                                "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
+                                "bridging loans",
+                                "capital securities", "commercial papers", "commodity financing",
+                                "conventional bonds", "debentures",
+                                "deferred liability", "export credit refinancing",
+                                "hire purchase payables",
+                                "invoice financing",
+                                "lease liabilities", "loan stocks",
+                                "loans and borrowings", "revenue", "profit before tax", "loss before tax",
+                                "Interest Income", "Finance Income",
+                                "financial year ended", "Interest Income / Finance Income",
+                                "Profit/(Loss) Before Tax",
+                                "(Loss)/Profit Before Tax", "equity", "equity investment", "stocks", "bonds",
+                                "real estate", "commodities", "collectibles", "mutual funds",
+                                "exchange-traded funds",
+                                "peer-to-peer lending", "cryptocurrencies", "hedge funds",
+                                "investments in subsidiaries", "investments in associates",
+                                "conventional banking", "conventional lending", "conventional banking and lending",
+                                "gambling", "liquor and liquor-related activities",
+                                "non-halal food", "non-halal beverage", "non-halal food and beverage",
+                                "tobacco and tobacco-related activities",
+                                "interest income from conventional accounts", "interest income from instrument",
+                                "dividends from non-compliant investments", "Shariah non-compliant entertainment",
+                                "share trading", "stockbroking business",
+                                "rental received from non-compliant activities",
+                                "rental received from Shariah non-compliant activities"],
+
+                   'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+                                       0, 0, 0,
+                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
+                                       3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                                       4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+                                       5, 5, 5, 5]}
+
 
 # Extract the data related to income from the dataset
-def ExtractIncomeData(df: pd.DataFrame):
+def ExtractIncomeData(df: pd.DataFrame, words_to_search: dict):
     cols1 = df.columns
     result_df = pd.DataFrame(columns=cols1).T
     revenue_df = pd.DataFrame()
     # print(pd.concat([cols2, cols3], axis=1).T)
     first_column = df.iloc[:, 0]
     # print(result_df)
-
-    words_to_search = {'features': ["cash and cash equivalent", "cash and bank balances", "cash at bank",
-                                    "cash held under housing development accounts",
-                                    "cash placed in conventional accounts and instruments",
-                                    "cash", "deposit with licensed bank", "investment", "money market instrument",
-                                    "other cash equivalents",
-                                    "deposits", "investment in cash funds", "resale agreement", "short term deposits",
-                                    "short term funds",
-                                    "short term investments", "unit trust funds", "total assets", "assets",
-                                    "borrowing",
-                                    "bank borrowings",
-                                    "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
-                                    "bridging loans",
-                                    "capital securities", "commercial papers", "commodity financing",
-                                    "conventional bonds", "debentures",
-                                    "deferred liability", "export credit refinancing",
-                                    "hire purchase payables",
-                                    "invoice financing",
-                                    "lease liabilities", "loan stocks",
-                                    "loans and borrowings", "revenue", "profit before tax", "loss before tax",
-                                    "Interest Income", "Finance Income",
-                                    "financial year ended", "Interest Income / Finance Income",
-                                    "Profit/(Loss) Before Tax",
-                                    "(Loss)/Profit Before Tax", "equity", "equity investment", "stocks", "bonds",
-                                    "real estate", "commodities", "collectibles", "mutual funds",
-                                    "exchange-traded funds",
-                                    "peer-to-peer lending", "cryptocurrencies", "hedge funds",
-                                    "investments in subsidiaries", "investments in associates",
-                                    "conventional banking", "conventional lending", "conventional banking and lending",
-                                    "gambling", "liquor and liquor-related activities",
-                                    "non-halal food", "non-halal beverage", "non-halal food and beverage",
-                                    "tobacco and tobacco-related activities",
-                                    "interest income from conventional accounts", "interest income from instrument",
-                                    "dividends from non-compliant investments", "Shariah non-compliant entertainment",
-                                    "share trading", "stockbroking business",
-                                    "rental received from non-compliant activities",
-                                    "rental received from Shariah non-compliant activities"],
-
-                       'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                                           0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
-                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-                                           4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-                                           5, 5, 5, 5]}
-
-    # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
 
     X = words_to_search['features']
     y = words_to_search['is_cash_related']
@@ -220,66 +218,20 @@ def ExtractIncomeData(df: pd.DataFrame):
     return result_df.T, revenue_df
 
 
-income_df, revenue_df = ExtractIncomeData(income_statement_df)
-# print(income_df)
+income_df, revenue_df = ExtractIncomeData(income_statement_df, words_to_search)
+'''print(income_df)
 print()
-
-
-# print(revenue_df)
+print(revenue_df)
+print()
+'''
 
 
 # Extract the data from the dataset related to debt from current & non-current liabilities
-def ExtractDebtData(df: pd.DataFrame):
+def ExtractDebtData(df: pd.DataFrame, words_to_search: dict):
     cols1 = df.columns
     result_df = pd.DataFrame(columns=cols1).T
     first_column = df.iloc[:, 0]
     # print(result_df)
-
-    words_to_search = {'features': ["cash and cash equivalent", "cash and bank balances", "cash at bank",
-                                    "cash held under housing development accounts",
-                                    "cash placed in conventional accounts and instruments",
-                                    "cash", "deposit with licensed bank", "investment", "money market instrument",
-                                    "other cash equivalents",
-                                    "deposits", "investment in cash funds", "resale agreement", "short term deposits",
-                                    "short term funds",
-                                    "short term investments", "unit trust funds", "total assets", "assets",
-                                    "borrowing", "short term borrowings",
-                                    "bank borrowings",
-                                    "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
-                                    "bridging loans",
-                                    "capital securities", "commercial papers", "commodity financing",
-                                    "conventional bonds", "debentures",
-                                    "deferred liability", "export credit refinancing",
-                                    "hire purchase payables",
-                                    "invoice financing",
-                                    "lease liabilities", "loan stocks",
-                                    "loans and borrowings", "revenue", "profit before tax", "loss before tax",
-                                    "Interest Income", "Finance Income",
-                                    "financial year ended", "Interest Income / Finance Income",
-                                    "Profit/(Loss) Before Tax",
-                                    "(Loss)/Profit Before Tax", "equity", "equity investment", "stocks", "bonds",
-                                    "real estate", "commodities", "collectibles", "mutual funds",
-                                    "exchange-traded funds",
-                                    "peer-to-peer lending", "cryptocurrencies", "hedge funds",
-                                    "investments in subsidiaries", "investments in associates",
-                                    "conventional banking", "conventional lending", "conventional banking and lending",
-                                    "gambling", "liquor and liquor-related activities",
-                                    "non-halal food", "non-halal beverage", "non-halal food and beverage",
-                                    "tobacco and tobacco-related activities", "interest income",
-                                    "interest income from conventional accounts", "interest income from instrument",
-                                    "dividends from non-compliant investments", "Shariah non-compliant entertainment",
-                                    "share trading", "stockbroking business",
-                                    "rental received from non-compliant activities",
-                                    "rental received from Shariah non-compliant activities"],
-
-                       'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
-                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-                                           4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-                                           5, 5, 5, 5]}
-
-    # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
 
     # words_df = pd.DataFrame(words_to_search)
     # print(words_df)
@@ -347,63 +299,17 @@ def ExtractDebtData(df: pd.DataFrame):
     return result_df.T
 
 
-debt_df = ExtractDebtData(df)
+debt_df = ExtractDebtData(df, words_to_search)
 # print(debt_df)
 print()
 
 
 # Extract data from the dataset related to cash
-def ExtractCashData(df: pd.DataFrame):
+def ExtractCashData(df: pd.DataFrame, words_to_search: dict):
     cols1 = df.columns
     result_df = pd.DataFrame(columns=cols1).T
     first_column = df.iloc[:, 0]
     # print(result_df)
-
-    words_to_search = {'features': ["cash and cash equivalent", "cash and bank balances", "cash at bank",
-                                    "cash held under housing development accounts",
-                                    "cash placed in conventional accounts and instruments",
-                                    "cash", "deposit with licensed bank", "investment", "money market instrument",
-                                    "other cash equivalents",
-                                    "deposits", "investment in cash funds", "resale agreement", "short term deposits",
-                                    "short term funds",
-                                    "short term investments", "unit trust funds", "total assets", "assets",
-                                    "borrowing", "short term borrowings",
-                                    "bank borrowings",
-                                    "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
-                                    "bridging loans",
-                                    "capital securities", "commercial papers", "commodity financing",
-                                    "conventional bonds", "debentures",
-                                    "deferred liability", "export credit refinancing",
-                                    "hire purchase payables",
-                                    "invoice financing",
-                                    "lease liabilities", "loan stocks",
-                                    "loans and borrowings", "revenue", "profit before tax", "loss before tax",
-                                    "Interest Income", "Finance Income",
-                                    "financial year ended", "Interest Income / Finance Income",
-                                    "Profit/(Loss) Before Tax",
-                                    "(Loss)/Profit Before Tax", "equity", "equity investment", "stocks", "bonds",
-                                    "real estate", "commodities", "collectibles", "mutual funds",
-                                    "exchange-traded funds",
-                                    "peer-to-peer lending", "cryptocurrencies", "hedge funds",
-                                    "investments in subsidiaries", "investments in associates",
-                                    "conventional banking", "conventional lending", "conventional banking and lending",
-                                    "gambling", "liquor and liquor-related activities",
-                                    "non-halal food", "non-halal beverage", "non-halal food and beverage",
-                                    "tobacco and tobacco-related activities", "interest income",
-                                    "interest income from conventional accounts", "interest income from instrument",
-                                    "dividends from non-compliant investments", "Shariah non-compliant entertainment",
-                                    "share trading", "stockbroking business",
-                                    "rental received from non-compliant activities",
-                                    "rental received from Shariah non-compliant activities"],
-
-                       'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
-                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-                                           4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-                                           5, 5, 5, 5]}
-
-    # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
 
     X = words_to_search['features']
     y = words_to_search['is_cash_related']
@@ -429,8 +335,8 @@ def ExtractCashData(df: pd.DataFrame):
     return result_df.T
 
 
-cash_df = ExtractCashData(df)
-print(cash_df)
+cash_df = ExtractCashData(df, words_to_search)
+# print(cash_df)
 # LOL
 print()
 
@@ -440,7 +346,7 @@ def ComputeCashRatio(df: pd.DataFrame):
     total_assets = pd.DataFrame()
     total_assets_index = 0
 
-    for index, row in df.iloc[2:].iterrows():
+    for index, row in df.iloc[0:].iterrows():
 
         if is_almost_match(row[0], "total assets"):
             total_assets_index = index
@@ -472,32 +378,27 @@ def ComputeCashRatio(df: pd.DataFrame):
     return percentage_result, total_assets_list
 
 
-percentage_result, total_assets = ComputeCashRatio(cash_df)
+percentage_result, total_assets_list = ComputeCashRatio(cash_df)
 
-print(percentage_result)
-print()
-print(total_assets)
-# print()
 # print(percentage_result)
+print()
+# print(total_assets_list)
+# print()
 
 
 # Calculate the percentage of the debt against total assets <= 33%
-'''def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
-    cols0 = df.loc[0]
-    cols1 = df.loc[1]
+def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
 
     new_df = df.drop(columns=df.columns[df.columns.str.contains('Unnamed')])
-    new_df = new_df.drop(0)
-    new_df = new_df.drop(1)
 
-    new_df = new_df.fillna(0)
-    new_df = new_df.replace('-', 0)
+    new_df = new_df.fillna(0.0)
+    new_df = new_df.replace('-', 0.0)
 
     # Remove brackets from elements in all columns
     new_df = new_df.applymap(lambda x: str(x).replace('(', '').replace(')', '').replace(',', ''))
 
     numpy_arrays = np.array(new_df.values.tolist())
-    numpy_arrays = numpy_arrays.astype(int)
+    numpy_arrays = numpy_arrays.astype(float)
     # print(numpy_arrays)
 
     sum_up_array = np.sum(numpy_arrays, axis=0)
@@ -506,66 +407,15 @@ print(total_assets)
     return percentage_result * 100
 
 
-percentage_debt = ComputeDebtRatio(debt_df, total_assets)
-
-
+percentage_debt = ComputeDebtRatio(debt_df, total_assets_list)
 # print(percentage_debt)
 
 
-def Extract5BenchMark(df: pd.DataFrame):
+def Extract5BenchMark(df: pd.DataFrame, words_to_search: dict):
     cols1 = df.columns
-    cols2 = df.loc[0]
-    cols3 = df.loc[1]
-    result_df = pd.concat([cols2, cols3], axis=1)
-    # print(pd.concat([cols2, cols3], axis=1).T)
+    result_df = pd.DataFrame().T
     first_column = df.iloc[:, 0]
     # print(result_df)
-
-    words_to_search = {'features': ["cash and cash equivalent", "cash and bank balances", "cash at bank",
-                                    "cash held under housing development accounts",
-                                    "cash placed in conventional accounts and instruments",
-                                    "cash", "deposit with licensed bank", "investment", "money market instrument",
-                                    "other cash equivalents",
-                                    "deposits", "investment in cash funds", "resale agreement", "short term deposits",
-                                    "short term funds",
-                                    "short term investments", "unit trust funds", "total assets", "assets",
-                                    "borrowing", "short term borrowings",
-                                    "bank borrowings",
-                                    "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
-                                    "bridging loans",
-                                    "capital securities", "commercial papers", "commodity financing",
-                                    "conventional bonds", "debentures",
-                                    "deferred liability", "export credit refinancing",
-                                    "hire purchase payables",
-                                    "invoice financing",
-                                    "lease liabilities", "loan stocks",
-                                    "loans and borrowings", "revenue", "profit before tax", "loss before tax",
-                                    "Interest Income", "Finance Income",
-                                    "financial year ended", "Interest Income / Finance Income",
-                                    "Profit/(Loss) Before Tax",
-                                    "(Loss)/Profit Before Tax", "equity", "equity investment", "stocks", "bonds",
-                                    "real estate", "commodities", "collectibles", "mutual funds",
-                                    "exchange-traded funds",
-                                    "peer-to-peer lending", "cryptocurrencies", "hedge funds",
-                                    "investments in subsidiaries", "investments in associates",
-                                    "conventional banking", "conventional lending", "conventional banking and lending",
-                                    "gambling", "liquor and liquor-related activities",
-                                    "non-halal food", "non-halal beverage", "non-halal food and beverage",
-                                    "tobacco and tobacco-related activities", "interest income",
-                                    "interest income from conventional accounts", "interest income from instrument",
-                                    "dividends from non-compliant investments", "Shariah non-compliant entertainment",
-                                    "share trading", "stockbroking business",
-                                    "rental received from non-compliant activities",
-                                    "rental received from Shariah non-compliant activities"],
-
-                       'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
-                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-                                           4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-                                           5, 5, 5, 5]}
-
-    # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
 
     X = words_to_search['features']
     y = words_to_search['is_cash_related']
@@ -573,7 +423,7 @@ def Extract5BenchMark(df: pd.DataFrame):
     logistic_model = LogisticSGDModel()
     logistic_model.fit(X, y)
 
-    for i in range(2, len(first_column)):
+    for i in range(0, len(first_column)):
 
         if not isinstance(first_column.loc[i], str):
             continue
@@ -591,65 +441,16 @@ def Extract5BenchMark(df: pd.DataFrame):
     return result_df.T
 
 
-benchmark_5 = Extract5BenchMark(df)
+benchmark_5 = Extract5BenchMark(df, words_to_search)
 # print(benchmark_5)
 print()
 
 
-def Extract20BenchMark(df: pd.DataFrame):
+def Extract20BenchMark(df: pd.DataFrame, words_to_search: dict):
     cols1 = df.columns
-    cols2 = df.loc[0]
-    cols3 = df.loc[1]
-    result_df = pd.concat([cols2, cols3], axis=1)
-    # print(pd.concat([cols2, cols3], axis=1).T)
+    result_df = pd.DataFrame().T
     first_column = df.iloc[:, 0]
     # print(result_df)
-
-    words_to_search = {'features': ["cash and cash equivalent", "cash and bank balances", "cash at bank",
-                                    "cash held under housing development accounts",
-                                    "cash placed in conventional accounts and instruments",
-                                    "cash", "deposit with licensed bank", "investment", "money market instrument",
-                                    "other cash equivalents",
-                                    "deposits", "investment in cash funds", "resale agreement", "short term deposits",
-                                    "short term funds",
-                                    "short term investments", "unit trust funds", "total assets", "assets",
-                                    "borrowing", "short term borrowings",
-                                    "bank borrowings",
-                                    "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
-                                    "bridging loans",
-                                    "capital securities", "commercial papers", "commodity financing",
-                                    "conventional bonds", "debentures",
-                                    "deferred liability", "export credit refinancing",
-                                    "hire purchase payables",
-                                    "invoice financing",
-                                    "lease liabilities", "loan stocks",
-                                    "loans and borrowings", "revenue", "profit before tax", "loss before tax",
-                                    "Interest Income", "Finance Income",
-                                    "financial year ended", "Interest Income / Finance Income",
-                                    "Profit/(Loss) Before Tax",
-                                    "(Loss)/Profit Before Tax", "equity", "equity investment", "stocks", "bonds",
-                                    "real estate", "commodities", "collectibles", "mutual funds",
-                                    "exchange-traded funds",
-                                    "peer-to-peer lending", "cryptocurrencies", "hedge funds",
-                                    "investments in subsidiaries", "investments in associates",
-                                    "conventional banking", "conventional lending", "conventional banking and lending",
-                                    "gambling", "liquor and liquor-related activities",
-                                    "non-halal food", "non-halal beverage", "non-halal food and beverage",
-                                    "tobacco and tobacco-related activities", "interest income",
-                                    "interest income from conventional accounts", "interest income from instrument",
-                                    "dividends from non-compliant investments", "Shariah non-compliant entertainment",
-                                    "share trading", "stockbroking business",
-                                    "rental received from non-compliant activities",
-                                    "rental received from Shariah non-compliant activities"],
-
-                       'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
-                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-                                           4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-                                           5, 5, 5, 5]}
-
-    # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
 
     X = words_to_search['features']
     y = words_to_search['is_cash_related']
@@ -657,7 +458,7 @@ def Extract20BenchMark(df: pd.DataFrame):
     logistic_model = LogisticSGDModel()
     logistic_model.fit(X, y)
 
-    for i in range(2, len(first_column)):
+    for i in range(0, len(first_column)):
 
         if not isinstance(first_column.loc[i], str):
             continue
@@ -675,6 +476,5 @@ def Extract20BenchMark(df: pd.DataFrame):
     return result_df.T
 
 
-benchmark_20 = Extract20BenchMark(df)
+benchmark_20 = Extract20BenchMark(df, words_to_search)
 # print(benchmark_20)
-'''
