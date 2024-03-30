@@ -18,7 +18,6 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
 from tabula.io import read_pdf
 
-
 # Function to extract text from PDF
 '''def extract_text_from_pdf(pdf: PyPDF2.PdfReader):
     text = ""
@@ -196,7 +195,6 @@ contains_string = df.apply(lambda row: row.astype(str).str.contains('[a-zA-Z]').
 print("Rows containing string values:")
 print(df[contains_string])
 
-
 # Assuming df is your DataFrame containing the data
 data = {
     "col1": [1, 2, "(14324)", 4],
@@ -212,7 +210,6 @@ df = df.applymap(lambda x: str(x).replace('(', '').replace(')', ''))
 print("DataFrame after removing brackets:")
 print(df)
 
-
 # Example 2D NumPy array of type string
 array_of_strings = np.array([["1", "2", "3"],
                              ["4", "5", "6"],
@@ -223,7 +220,6 @@ array_of_integers = array_of_strings.astype(int)
 
 print("2D array of integers:")
 print(array_of_integers)
-
 
 # Example 2D numpy array with string representations of floating-point numbers
 str_array_2d = np.array([['102509.6', '102448.1'], ['16592.5', '16473.5']])
@@ -236,18 +232,17 @@ rounded_array_2d = np.round(float_array_2d, 2)
 
 print(rounded_array_2d)
 
-
 # Creating a sample DataFrame
 data = {
-    'Name': ['John', 'Anna', 'Peter', 'Linda'],
+    'Name': [14, 23, 7, 19],
     'Age': [28, 34, 29, 32],
-    'City': ['New York', 'Paris', 'Berlin', 'London']
+    'City': [53, 21, 16, 11]
 }
+
 df = pd.DataFrame(data)
+print(df)
 
 # Converting the DataFrame to JSON
 json_str = df.to_json(orient='records')
 
 print(json_str)
-
-

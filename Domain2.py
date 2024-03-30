@@ -70,6 +70,13 @@ def isInPDFFile(str1: str, str2: str):
     return label
 
 
+def contains_brackets(row):
+    for element in row:
+        if '(' in element and ')' in element:
+            return True
+    return False
+
+
 def levenshtein_distance(s1, s2):
     if len(s1) > len(s2):
         s1, s2 = s2, s1
@@ -112,7 +119,7 @@ def ReadTablePages(pdf: PyPDF2.PdfReader, arr: np.ndarray):
 
 # Get the data from the pdf file basd on pages.
 df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16, 17, 18, 19, 20]))
-# print(df)
+print(df)
 income_statement_df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16]))
 
 
@@ -382,13 +389,14 @@ percentage_result, total_assets_list = ComputeCashRatio(cash_df)
 
 # print(percentage_result)
 print()
+
+
 # print(total_assets_list)
 # print()
 
 
 # Calculate the percentage of the debt against total assets <= 33%
 def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
-
     new_df = df.drop(columns=df.columns[df.columns.str.contains('Unnamed')])
 
     new_df = new_df.fillna(0.0)
