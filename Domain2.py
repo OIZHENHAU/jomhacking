@@ -147,13 +147,16 @@ def ReadTablePages(pdf: PyPDF2.PdfReader, arr: np.ndarray):
 
 
 # Get the data from the pdf file basd on pages.
-df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16, 17, 18, 19, 20]))
+df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([18, 19, 20]))
 # json_str = df.to_json(orient='records')
+print(df)
+print()
+income_statement_df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16, 17]))
+print("Income Statements: ")
+print(income_statement_df)
 
-income_statement_df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16]))
 
-
-# Replace the unnamned column into specific label in the dataset
+# Replace the unnamed column into specific label in the dataset
 def ReplaceAndGetCategory(df: pd.DataFrame):
     # df.columns = [col if not col.startswith('Unnamed') else '' for col in df.columns]
     cols = list(df.columns)
@@ -266,6 +269,8 @@ def ExtractIncomeData(df: pd.DataFrame, words_to_search: dict):
         else:
             continue
 
+    print("The dataset for related to income: ")
+    print(result_df.T)
     json_result_df = result_df.T.to_json(orient='records')
     json_revenue_df = revenue_df.T.to_json(orient='records')
 
@@ -278,8 +283,9 @@ json_income_df, json_revenue_df = ExtractIncomeData(income_statement_df, words_t
 # print(json_revenue_df)
 print()
 revenue_df = filterDFToNumpy(removeUnnamedColumns(convertJsonToDF(json_revenue_df)))
-print(revenue_df)
-print()
+
+
+# print(revenue_df)
 
 
 # Extract the data from the dataset related to debt from current & non-current liabilities
@@ -355,6 +361,8 @@ def ExtractDebtData(df: pd.DataFrame, words_to_search: dict):
             # print("case 4")
             continue
 
+    print("The dataset for related to debt: ")
+    print(result_df.T)
     json_result_df = result_df.T.to_json(orient='records')
     return json_result_df
 
@@ -396,6 +404,8 @@ def ExtractCashData(df: pd.DataFrame, words_to_search: dict):
         else:
             continue
 
+    print("The dataset for related to cash: ")
+    print(result_df.T)
     json_result_df = result_df.T.to_json(orient='records')
     return json_result_df
 
@@ -445,13 +455,16 @@ def ComputeCashRatio(df: pd.DataFrame):
     sum_up_array = np.sum(numpy_arrays, axis=0)
     percentage_result = sum_up_array / total_assets_list * 100
 
-    '''total_assets_df = pd.DataFrame(total_assets_list, index=columns_to_remove)
+    total_assets_df = pd.DataFrame(total_assets_list, index=columns_to_remove)
     total_assets_df = total_assets_df.T
-    json_total_assets = total_assets_df.to_json(orient='records')
-    '''
+    print("The total assets for this dataset: ")
+    print(total_assets_df)
+    print()
 
     percentage_result_df = pd.DataFrame(percentage_result, index=columns_to_remove)
     percentage_result_df = percentage_result_df.T
+    print("Compute the ratio for the cash: ")
+    print(percentage_result_df)
     json_percentage_result = percentage_result_df.to_json(orient='records')
 
     return json_percentage_result, total_assets_list
@@ -486,12 +499,15 @@ def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
 
     percentage_result_df = pd.DataFrame(percentage_result, index=columns_to_remove)
     percentage_result_df = percentage_result_df.T
+    print("Compute the ratio for the debts: ")
+    print(percentage_result_df)
     json_percentage_result = percentage_result_df.to_json(orient='records')
 
     return json_percentage_result
 
 
 json_percentage_debt = ComputeDebtRatio(debt_df, total_assets_list)
+print()
 
 
 # print(json_percentage_debt)
@@ -528,7 +544,7 @@ def Extract5BenchMark(df: pd.DataFrame, words_to_search: dict):
         else:
             continue
 
-    print("5 percent")
+    print("5 percent benchmark dataset: ")
     print(result_df.T)
     json_result_df = result_df.T.to_json(orient='records')
     return json_result_df
@@ -570,7 +586,7 @@ def Extract20BenchMark(df: pd.DataFrame, words_to_search: dict):
         else:
             continue
 
-    print("20 percent")
+    print("20 percent benchmark dataset: ")
     print(result_df.T)
     json_result_df = result_df.T.to_json(orient='records')
     return json_result_df
@@ -578,6 +594,7 @@ def Extract20BenchMark(df: pd.DataFrame, words_to_search: dict):
 
 json_benchmark_20 = Extract20BenchMark(df, words_to_search)
 # print(json_benchmark_20)
+print()
 
 benchmark5_df = convertJsonToDF(json_benchmark_5)
 benchmark20_df = convertJsonToDF(json_benchmark_20)
@@ -603,10 +620,17 @@ def compute5Benchmark(df: pd.DataFrame, revenue_df: np.ndarray):
 
     percentage_result = sum_array_benchmark5 / revenue_df * 100
     # print(percentage_result)
-    return percentage_result
+    percentage_result_df = pd.DataFrame(percentage_result[0], index=columns_to_remove)
+    percentage_result_df = percentage_result_df.T
+    print("Compute the ration for the 5% benchmark: ")
+    print(percentage_result_df)
+
+    json_percentage_result = percentage_result_df.to_json(orient='records')
+    return json_percentage_result
 
 
 percent_5benchmark = compute5Benchmark(benchmark5_df, revenue_df)
+print()
 
 
 # print(percent_5benchmark)
@@ -633,7 +657,13 @@ def compute20Benchmark(df: pd.DataFrame, revenue_df: np.ndarray):
 
     percentage_result = sum_array_benchmark20 / revenue_df * 100
     # print(percentage_result)
-    return percentage_result
+    percentage_result_df = pd.DataFrame(percentage_result[0], index=columns_to_remove)
+    percentage_result_df = percentage_result_df.T
+    print("Compute the ration for the 20% benchmark: ")
+    print(percentage_result_df)
+
+    json_percentage_result = percentage_result_df.to_json(orient='records')
+    return json_percentage_result
 
 
 percent_20benchmark = compute20Benchmark(benchmark20_df, revenue_df)
