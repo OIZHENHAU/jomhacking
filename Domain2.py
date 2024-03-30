@@ -130,18 +130,15 @@ def ReplaceAndGetCategory(df: pd.DataFrame):
 
 
 # df = ReplaceAndGetCategory(df)
-print(df)
-
-
+# print(df)
 # print()
 
 
 # Extract the data related to income from the dataset
 def ExtractIncomeData(df: pd.DataFrame):
     cols1 = df.columns
-    cols2 = df.loc[0]
-    cols3 = df.loc[1]
-    result_df = pd.concat([cols2, cols3], axis=1)
+    result_df = pd.DataFrame(columns=cols1).T
+    revenue_df = pd.DataFrame()
     # print(pd.concat([cols2, cols3], axis=1).T)
     first_column = df.iloc[:, 0]
     # print(result_df)
@@ -198,12 +195,18 @@ def ExtractIncomeData(df: pd.DataFrame):
     logistic_model = LogisticSGDModel()
     logistic_model.fit(X, y)
 
-    for i in range(2, len(first_column)):
+    for i in range(0, len(first_column)):
 
         if not isinstance(first_column.loc[i], str):
             continue
 
         features = first_column.loc[i]
+
+        if is_almost_match(features, "revenue"):
+            revenue_df = df.loc[i]
+            # print(revenue_df)
+            result_df = pd.concat([result_df, revenue_df], axis=1)
+            continue
 
         predicted_value = logistic_model.predict([features])
 
@@ -214,20 +217,21 @@ def ExtractIncomeData(df: pd.DataFrame):
         else:
             continue
 
-    return result_df.T
+    return result_df.T, revenue_df
 
 
-income_df = ExtractIncomeData(income_statement_df)
+income_df, revenue_df = ExtractIncomeData(income_statement_df)
 # print(income_df)
+print()
+
+
+# print(revenue_df)
 
 
 # Extract the data from the dataset related to debt from current & non-current liabilities
-'''def ExtractDebtData(df: pd.DataFrame):
+def ExtractDebtData(df: pd.DataFrame):
     cols1 = df.columns
-    cols2 = df.loc[0]
-    cols3 = df.loc[1]
-    result_df = pd.concat([cols2, cols3], axis=1)
-    # print(pd.concat([cols2, cols3], axis=1).T)
+    result_df = pd.DataFrame(columns=cols1).T
     first_column = df.iloc[:, 0]
     # print(result_df)
 
@@ -239,7 +243,7 @@ income_df = ExtractIncomeData(income_statement_df)
                                     "deposits", "investment in cash funds", "resale agreement", "short term deposits",
                                     "short term funds",
                                     "short term investments", "unit trust funds", "total assets", "assets",
-                                    "borrowing",
+                                    "borrowing", "short term borrowings",
                                     "bank borrowings",
                                     "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
                                     "bridging loans",
@@ -269,7 +273,7 @@ income_df = ExtractIncomeData(income_statement_df)
                                     "rental received from Shariah non-compliant activities"],
 
                        'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                                           0, 0,
+                                           0, 0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
                                            3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
                                            4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
@@ -351,10 +355,7 @@ print()
 # Extract data from the dataset related to cash
 def ExtractCashData(df: pd.DataFrame):
     cols1 = df.columns
-    cols2 = df.loc[0]
-    cols3 = df.loc[1]
-    result_df = pd.concat([cols2, cols3], axis=1)
-    # print(pd.concat([cols2, cols3], axis=1).T)
+    result_df = pd.DataFrame(columns=cols1).T
     first_column = df.iloc[:, 0]
     # print(result_df)
 
@@ -366,7 +367,7 @@ def ExtractCashData(df: pd.DataFrame):
                                     "deposits", "investment in cash funds", "resale agreement", "short term deposits",
                                     "short term funds",
                                     "short term investments", "unit trust funds", "total assets", "assets",
-                                    "borrowing",
+                                    "borrowing", "short term borrowings",
                                     "bank borrowings",
                                     "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
                                     "bridging loans",
@@ -396,7 +397,7 @@ def ExtractCashData(df: pd.DataFrame):
                                     "rental received from Shariah non-compliant activities"],
 
                        'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                                           0, 0,
+                                           0, 0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
                                            3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
                                            4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
@@ -429,16 +430,14 @@ def ExtractCashData(df: pd.DataFrame):
 
 
 cash_df = ExtractCashData(df)
-# print(cash_df)
+print(cash_df)
 # LOL
 print()
 
 
 # Calculate the percentage of the cash against total assets <= 33%
 def ComputeCashRatio(df: pd.DataFrame):
-    cols0 = df.loc[0]
-    cols1 = df.loc[1]
-    total_assets = df.loc[0]
+    total_assets = pd.DataFrame()
     total_assets_index = 0
 
     for index, row in df.iloc[2:].iterrows():
@@ -447,27 +446,25 @@ def ComputeCashRatio(df: pd.DataFrame):
             total_assets_index = index
 
     new_df = df.drop(columns=df.columns[df.columns.str.contains('Unnamed')])
-    new_df = new_df.drop(0)
-    new_df = new_df.drop(1)
 
-    new_df = new_df.fillna(0)
-    new_df = new_df.replace('-', 0)
+    new_df = new_df.fillna(0.0)
+    new_df = new_df.replace('-', 0.0)
     # print(new_df)
 
     # Remove brackets from elements in all columns
     new_df = new_df.applymap(lambda x: str(x).replace('(', '').replace(')', '').replace(',', ''))
-    # print(new_df)
 
     total_assets = new_df.loc[total_assets_index]
     total_assets_list = np.array(total_assets.values.tolist())
-    # print(total_assets_list)
-    total_assets_list = total_assets_list.astype(int)
+    total_assets_list = total_assets_list.astype(float)
+    total_assets_list = np.round(total_assets_list, 2)
 
     new_df = new_df.drop(total_assets_index)
 
     # Convert the DataFrame into a list of NumPy arrays
     numpy_arrays = np.array(new_df.values.tolist())
-    numpy_arrays = numpy_arrays.astype(int)
+    numpy_arrays = numpy_arrays.astype(float)
+    numpy_arrays = np.round(numpy_arrays, 2)
 
     sum_up_array = np.sum(numpy_arrays, axis=0)
     percentage_result = sum_up_array / total_assets_list * 100
@@ -477,16 +474,15 @@ def ComputeCashRatio(df: pd.DataFrame):
 
 percentage_result, total_assets = ComputeCashRatio(cash_df)
 
+print(percentage_result)
 print()
-
-
-# print(total_assets)
+print(total_assets)
 # print()
 # print(percentage_result)
 
 
 # Calculate the percentage of the debt against total assets <= 33%
-def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
+'''def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
     cols0 = df.loc[0]
     cols1 = df.loc[1]
 
@@ -533,7 +529,7 @@ def Extract5BenchMark(df: pd.DataFrame):
                                     "deposits", "investment in cash funds", "resale agreement", "short term deposits",
                                     "short term funds",
                                     "short term investments", "unit trust funds", "total assets", "assets",
-                                    "borrowing",
+                                    "borrowing", "short term borrowings",
                                     "bank borrowings",
                                     "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
                                     "bridging loans",
@@ -563,7 +559,7 @@ def Extract5BenchMark(df: pd.DataFrame):
                                     "rental received from Shariah non-compliant activities"],
 
                        'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                                           0, 0,
+                                           0, 0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
                                            3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
                                            4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
@@ -617,7 +613,7 @@ def Extract20BenchMark(df: pd.DataFrame):
                                     "deposits", "investment in cash funds", "resale agreement", "short term deposits",
                                     "short term funds",
                                     "short term investments", "unit trust funds", "total assets", "assets",
-                                    "borrowing",
+                                    "borrowing", "short term borrowings",
                                     "bank borrowings",
                                     "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
                                     "bridging loans",
@@ -647,7 +643,7 @@ def Extract20BenchMark(df: pd.DataFrame):
                                     "rental received from Shariah non-compliant activities"],
 
                        'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                                           0, 0,
+                                           0, 0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
                                            3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
                                            4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,

@@ -225,3 +225,15 @@ print("2D array of integers:")
 print(array_of_integers)
 
 
+# Example 2D numpy array with string representations of floating-point numbers
+str_array_2d = np.array([['102509.6', '102448.1'], ['16592.5', '16473.5']])
+
+# Convert the strings to floats
+float_array_2d = str_array_2d.astype(float)
+
+# Round the floats to two decimal places
+rounded_array_2d = np.round(float_array_2d, 2)
+
+print(rounded_array_2d)
+
+
