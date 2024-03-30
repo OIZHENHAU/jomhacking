@@ -283,6 +283,9 @@ def ExtractDebtData(df: pd.DataFrame, words_to_search: dict):
         features = first_column.loc[i]
         # print(features)
 
+        if "total" in features.lower():
+            continue
+
         if non_current_liabilities or current_liabilities:
             # print("case 1")
 
@@ -349,6 +352,10 @@ def ExtractCashData(df: pd.DataFrame, words_to_search: dict):
             continue
 
         features = first_column.loc[i]
+
+        if "total" in features.lower() and not is_almost_match(features, "total assets"):
+            continue
+
         predicted_value = logistic_model.predict([features])
 
         if predicted_value == 1:
@@ -362,7 +369,7 @@ def ExtractCashData(df: pd.DataFrame, words_to_search: dict):
 
 
 cash_df = ExtractCashData(df, words_to_search)
-print(cash_df)
+# print(cash_df)
 # LOL
 print()
 
