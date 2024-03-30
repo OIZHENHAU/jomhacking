@@ -34,6 +34,8 @@ total_Pages = len(reader.pages)
 
 # Read the specific pages from the pdf file (exp: pg 11)
 tables = tabula.io.read_pdf("Financial_Statements.pdf", stream=True, pages="13")
+
+
 # print(tables)
 
 
@@ -105,6 +107,8 @@ def ReplaceAndGetCategory(df: pd.DataFrame):
 
 # print(ReplaceAndGetCategory(df))
 df = ReplaceAndGetCategory(df)
+
+
 # print(df)
 # print()
 
@@ -215,7 +219,8 @@ def ExtractDebtData(df: pd.DataFrame):
                                     "tobacco and tobacco-related activities", "interest income",
                                     "interest income from conventional accounts", "interest income from instrument",
                                     "dividends from non-compliant investments", "Shariah non-compliant entertainment",
-                                    "share trading", "stockbroking business", "rental received from non-compliant activities",
+                                    "share trading", "stockbroking business",
+                                    "rental received from non-compliant activities",
                                     "rental received from Shariah non-compliant activities"],
 
                        'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
@@ -426,6 +431,8 @@ def ComputeCashRatio(df: pd.DataFrame):
 percentage_result, total_assets = ComputeCashRatio(cash_df)
 
 print()
+
+
 # print(total_assets)
 # print()
 # print(percentage_result)
@@ -457,9 +464,164 @@ def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
 
 
 percentage_debt = ComputeDebtRatio(debt_df, total_assets)
+
+
 # print(percentage_debt)
 
 
+def Extract5BenchMark(df: pd.DataFrame):
+    cols1 = df.columns
+    cols2 = df.loc[0]
+    cols3 = df.loc[1]
+    result_df = pd.concat([cols2, cols3], axis=1)
+    # print(pd.concat([cols2, cols3], axis=1).T)
+    first_column = df.iloc[:, 0]
+    # print(result_df)
 
-# def Extract5BenchMark(df: pd.DataFrame):
+    words_to_search = {'features': ["cash and cash equivalent", "cash and bank balances", "cash at bank",
+                                    "cash held under housing development accounts",
+                                    "cash placed in conventional accounts and instruments",
+                                    "cash", "deposit with licensed bank", "investment", "money market instrument",
+                                    "other cash equivalents",
+                                    "deposits", "investment in cash funds", "resale agreement", "short term deposits",
+                                    "short term funds",
+                                    "short term investments", "unit trust funds", "total assets", "assets",
+                                    "borrowing",
+                                    "bank borrowings",
+                                    "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
+                                    "bridging loans",
+                                    "capital securities", "commercial papers", "commodity financing",
+                                    "conventional bonds", "debentures",
+                                    "deferred liability", "export credit refinancing",
+                                    "hire purchase payables",
+                                    "invoice financing",
+                                    "lease liabilities", "loan stocks",
+                                    "loans and borrowings", "revenue", "profit before tax", "loss before tax",
+                                    "Interest Income", "Finance Income",
+                                    "financial year ended", "Interest Income / Finance Income",
+                                    "Profit/(Loss) Before Tax",
+                                    "(Loss)/Profit Before Tax", "equity", "equity investment", "stocks", "bonds",
+                                    "real estate", "commodities", "collectibles", "mutual funds",
+                                    "exchange-traded funds",
+                                    "peer-to-peer lending", "cryptocurrencies", "hedge funds",
+                                    "investments in subsidiaries", "investments in associates",
+                                    "conventional banking", "conventional lending", "conventional banking and lending",
+                                    "gambling", "liquor and liquor-related activities",
+                                    "non-halal food", "non-halal beverage", "non-halal food and beverage",
+                                    "tobacco and tobacco-related activities", "interest income",
+                                    "interest income from conventional accounts", "interest income from instrument",
+                                    "dividends from non-compliant investments", "Shariah non-compliant entertainment",
+                                    "share trading", "stockbroking business",
+                                    "rental received from non-compliant activities",
+                                    "rental received from Shariah non-compliant activities"],
 
+                       'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+                                           0, 0,
+                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
+                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                                           4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+                                           5, 5, 5, 5]}
+
+    # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
+
+    X = words_to_search['features']
+    y = words_to_search['is_cash_related']
+
+    logistic_model = LogisticSGDModel()
+    logistic_model.fit(X, y)
+
+    for i in range(2, len(first_column)):
+
+        if not isinstance(first_column.loc[i], str):
+            continue
+
+        features = first_column.loc[i]
+        predicted_value = logistic_model.predict([features])
+
+        if predicted_value == 4:
+            curr_col = df.loc[i]
+            result_df = pd.concat([result_df, curr_col], axis=1)
+
+        else:
+            continue
+
+    return result_df.T
+
+
+def Extract20BenchMark(df: pd.DataFrame):
+    cols1 = df.columns
+    cols2 = df.loc[0]
+    cols3 = df.loc[1]
+    result_df = pd.concat([cols2, cols3], axis=1)
+    # print(pd.concat([cols2, cols3], axis=1).T)
+    first_column = df.iloc[:, 0]
+    # print(result_df)
+
+    words_to_search = {'features': ["cash and cash equivalent", "cash and bank balances", "cash at bank",
+                                    "cash held under housing development accounts",
+                                    "cash placed in conventional accounts and instruments",
+                                    "cash", "deposit with licensed bank", "investment", "money market instrument",
+                                    "other cash equivalents",
+                                    "deposits", "investment in cash funds", "resale agreement", "short term deposits",
+                                    "short term funds",
+                                    "short term investments", "unit trust funds", "total assets", "assets",
+                                    "borrowing",
+                                    "bank borrowings",
+                                    "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
+                                    "bridging loans",
+                                    "capital securities", "commercial papers", "commodity financing",
+                                    "conventional bonds", "debentures",
+                                    "deferred liability", "export credit refinancing",
+                                    "hire purchase payables",
+                                    "invoice financing",
+                                    "lease liabilities", "loan stocks",
+                                    "loans and borrowings", "revenue", "profit before tax", "loss before tax",
+                                    "Interest Income", "Finance Income",
+                                    "financial year ended", "Interest Income / Finance Income",
+                                    "Profit/(Loss) Before Tax",
+                                    "(Loss)/Profit Before Tax", "equity", "equity investment", "stocks", "bonds",
+                                    "real estate", "commodities", "collectibles", "mutual funds",
+                                    "exchange-traded funds",
+                                    "peer-to-peer lending", "cryptocurrencies", "hedge funds",
+                                    "investments in subsidiaries", "investments in associates",
+                                    "conventional banking", "conventional lending", "conventional banking and lending",
+                                    "gambling", "liquor and liquor-related activities",
+                                    "non-halal food", "non-halal beverage", "non-halal food and beverage",
+                                    "tobacco and tobacco-related activities", "interest income",
+                                    "interest income from conventional accounts", "interest income from instrument",
+                                    "dividends from non-compliant investments", "Shariah non-compliant entertainment",
+                                    "share trading", "stockbroking business",
+                                    "rental received from non-compliant activities",
+                                    "rental received from Shariah non-compliant activities"],
+
+                       'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+                                           0, 0,
+                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
+                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                                           4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+                                           5, 5, 5, 5]}
+
+    # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
+
+    X = words_to_search['features']
+    y = words_to_search['is_cash_related']
+
+    logistic_model = LogisticSGDModel()
+    logistic_model.fit(X, y)
+
+    for i in range(2, len(first_column)):
+
+        if not isinstance(first_column.loc[i], str):
+            continue
+
+        features = first_column.loc[i]
+        predicted_value = logistic_model.predict([features])
+
+        if predicted_value == 5:
+            curr_col = df.loc[i]
+            result_df = pd.concat([result_df, curr_col], axis=1)
+
+        else:
+            continue
+
+    return result_df.T
