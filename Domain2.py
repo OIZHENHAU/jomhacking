@@ -33,7 +33,8 @@ total_Pages = len(reader.pages)
 
 
 # Read the specific pages from the pdf file (exp: pg 11)
-tables = tabula.io.read_pdf("Financial_Statements.pdf", stream=True, pages="11")
+tables = tabula.io.read_pdf("Financial_Statements.pdf", stream=True, pages="13")
+# print(tables)
 
 
 # Extract every page in the PDF file
@@ -105,7 +106,7 @@ def ReplaceAndGetCategory(df: pd.DataFrame):
 # print(ReplaceAndGetCategory(df))
 df = ReplaceAndGetCategory(df)
 # print(df)
-print()
+# print()
 
 
 # Extract the data related to income from the dataset
@@ -207,11 +208,22 @@ def ExtractDebtData(df: pd.DataFrame):
                                     "real estate", "commodities", "collectibles", "mutual funds",
                                     "exchange-traded funds",
                                     "peer-to-peer lending", "cryptocurrencies", "hedge funds",
-                                    "investments in subsidiaries", "investments in associates"],
+                                    "investments in subsidiaries", "investments in associates",
+                                    "conventional banking", "conventional lending", "conventional banking and lending",
+                                    "gambling", "liquor and liquor-related activities",
+                                    "non-halal food", "non-halal beverage", "non-halal food and beverage",
+                                    "tobacco and tobacco-related activities", "interest income",
+                                    "interest income from conventional accounts", "interest income from instrument",
+                                    "dividends from non-compliant investments", "Shariah non-compliant entertainment",
+                                    "share trading", "stockbroking business", "rental received from non-compliant activities",
+                                    "rental received from Shariah non-compliant activities"],
+
                        'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
                                            0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
-                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3]}
+                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                                           4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+                                           5, 5, 5, 5]}
 
     # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
 
@@ -322,11 +334,23 @@ def ExtractCashData(df: pd.DataFrame):
                                     "real estate", "commodities", "collectibles", "mutual funds",
                                     "exchange-traded funds",
                                     "peer-to-peer lending", "cryptocurrencies", "hedge funds",
-                                    "investments in subsidiaries", "investments in associates"],
+                                    "investments in subsidiaries", "investments in associates",
+                                    "conventional banking", "conventional lending", "conventional banking and lending",
+                                    "gambling", "liquor and liquor-related activities",
+                                    "non-halal food", "non-halal beverage", "non-halal food and beverage",
+                                    "tobacco and tobacco-related activities", "interest income",
+                                    "interest income from conventional accounts", "interest income from instrument",
+                                    "dividends from non-compliant investments", "Shariah non-compliant entertainment",
+                                    "share trading", "stockbroking business",
+                                    "rental received from non-compliant activities",
+                                    "rental received from Shariah non-compliant activities"],
+
                        'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
                                            0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
-                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3]}
+                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                                           4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+                                           5, 5, 5, 5]}
 
     # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
 
@@ -401,10 +425,10 @@ def ComputeCashRatio(df: pd.DataFrame):
 
 percentage_result, total_assets = ComputeCashRatio(cash_df)
 
-
+print()
 # print(total_assets)
 # print()
-print(percentage_result)
+# print(percentage_result)
 
 
 # Calculate the percentage of the debt against total assets
@@ -433,5 +457,9 @@ def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
 
 
 percentage_debt = ComputeDebtRatio(debt_df, total_assets)
-print(percentage_debt)
+# print(percentage_debt)
+
+
+
+# def Extract5BenchMark(df: pd.DataFrame):
 
