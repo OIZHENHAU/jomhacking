@@ -29,13 +29,13 @@ text = page.extract_text()
 
 # To get the total pages from the PDF file
 total_Pages = len(reader.pages)
+
+
 # print(f"Total Pages: {totalPages}")
 
 
 # Read the specific pages from the pdf file (exp: pg 11)
-tables = tabula.io.read_pdf("Financial_Statements.pdf", stream=True, pages="13")
-
-
+# tables = tabula.io.read_pdf("Financial_Statements.pdf", stream=True, pages="13")
 # print(tables)
 
 
@@ -70,88 +70,6 @@ def isInPDFFile(str1: str, str2: str):
     return label
 
 
-# Read the given pages in the PDF file
-def ReadTablePages(pdf: PyPDF2.PdfReader, arr: np.ndarray):
-    length_arr = len(arr)
-    pages_label = str(arr[0])
-    result_tables = tabula.io.read_pdf(pdf, stream=True, pages=pages_label)[0]
-
-    for i in range(1, length_arr):
-        curr_pages = str(arr[i])
-        curr_tables = tabula.io.read_pdf(pdf, stream=True, pages=curr_pages)[0]
-        curr_tables = curr_tables[2:]
-        curr_tables.index += len(result_tables) - 2
-        result_tables = pd.concat([result_tables, curr_tables], axis=0)
-
-    return result_tables
-
-
-# Get the data from the pdf file basd on pages.
-df = ReadTablePages("Financial_Statements.pdf", np.array([11, 12]))
-
-
-# print(df)
-
-# Replace the unnamned column into specific label in the dataset
-def ReplaceAndGetCategory(df: pd.DataFrame):
-    # df.columns = [col if not col.startswith('Unnamed') else '' for col in df.columns]
-    cols = list(df.columns)
-    for i, col in enumerate(cols[:]):  # exclude the last column since it has no next column
-        # Check if the column is 'Unnamed' and the next column is either 'Group' or 'Company'
-        if "Unnamed" in col and (cols[i - 1] != "Unnamed"):
-            # Rename the column to the name of the next column
-            cols[i] = cols[i - 1]
-    df.columns = cols
-    return df
-
-
-# print(ReplaceAndGetCategory(df))
-df = ReplaceAndGetCategory(df)
-
-
-# print(df)
-# print()
-
-
-# Extract the data related to income from the dataset
-def ExtractIncomeData(df: pd.DataFrame):
-    cols1 = df.columns
-    cols2 = df.loc[0]
-    cols3 = df.loc[1]
-    result_df = pd.concat([cols2, cols3], axis=1)
-    # print(pd.concat([cols2, cols3], axis=1).T)
-    first_column = df.iloc[:, 0]
-    # print(result_df)
-
-    words_to_search = ["revenue", "profit before tax", "loss before tax", "Interest Income", "Finance Income",
-                       "financial year ended", "Interest Income / Finance Income", "Profit/(Loss) Before Tax",
-                       "(Loss)/Profit Before Tax"]
-
-    for i in range(2, len(first_column)):
-        # print(first_column.loc[i], i)
-
-        if not isinstance(first_column.loc[i], str):
-            continue
-
-        features = first_column.loc[i].lower().split()
-
-        array_words = [element.lower().split() for element in words_to_search]
-
-        for words in array_words:
-            if all(word in features for word in words):
-                curr_col = df.loc[i]
-                result_df = pd.concat([result_df, curr_col], axis=1)
-                break
-
-    return result_df.T
-
-
-income_df = ExtractIncomeData(df)
-
-
-# print(income_df)
-
-
 def levenshtein_distance(s1, s2):
     if len(s1) > len(s2):
         s1, s2 = s2, s1
@@ -176,8 +94,135 @@ def is_almost_match(s1: str, s2: str, threshold=3):
     return distance <= threshold
 
 
+# Read the given pages in the PDF file
+def ReadTablePages(pdf: PyPDF2.PdfReader, arr: np.ndarray):
+    length_arr = len(arr)
+    pages_label = str(arr[0])
+    result_tables = tabula.io.read_pdf(pdf, stream=True, pages=pages_label)[0]
+
+    for i in range(1, length_arr):
+        curr_pages = str(arr[i])
+        curr_tables = tabula.io.read_pdf(pdf, stream=True, pages=curr_pages)[0]
+        curr_tables = curr_tables[2:]
+        curr_tables.index += len(result_tables) - 2
+        result_tables = pd.concat([result_tables, curr_tables], axis=0)
+
+    return result_tables
+
+
+# Get the data from the pdf file basd on pages.
+df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16, 17, 18, 19, 20]))
+# print(df)
+income_statement_df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16]))
+
+
+# Replace the unnamned column into specific label in the dataset
+def ReplaceAndGetCategory(df: pd.DataFrame):
+    # df.columns = [col if not col.startswith('Unnamed') else '' for col in df.columns]
+    cols = list(df.columns)
+    for i, col in enumerate(cols[:]):  # exclude the last column since it has no next column
+        # Check if the column is 'Unnamed' and the next column is either 'Group' or 'Company'
+        if "Unnamed" in col and (cols[i - 1] != "Unnamed"):
+            # Rename the column to the name of the next column
+            cols[i] = cols[i - 1]
+    df.columns = cols
+    return df
+
+
+# df = ReplaceAndGetCategory(df)
+print(df)
+
+
+# print()
+
+
+# Extract the data related to income from the dataset
+def ExtractIncomeData(df: pd.DataFrame):
+    cols1 = df.columns
+    cols2 = df.loc[0]
+    cols3 = df.loc[1]
+    result_df = pd.concat([cols2, cols3], axis=1)
+    # print(pd.concat([cols2, cols3], axis=1).T)
+    first_column = df.iloc[:, 0]
+    # print(result_df)
+
+    words_to_search = {'features': ["cash and cash equivalent", "cash and bank balances", "cash at bank",
+                                    "cash held under housing development accounts",
+                                    "cash placed in conventional accounts and instruments",
+                                    "cash", "deposit with licensed bank", "investment", "money market instrument",
+                                    "other cash equivalents",
+                                    "deposits", "investment in cash funds", "resale agreement", "short term deposits",
+                                    "short term funds",
+                                    "short term investments", "unit trust funds", "total assets", "assets",
+                                    "borrowing",
+                                    "bank borrowings",
+                                    "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
+                                    "bridging loans",
+                                    "capital securities", "commercial papers", "commodity financing",
+                                    "conventional bonds", "debentures",
+                                    "deferred liability", "export credit refinancing",
+                                    "hire purchase payables",
+                                    "invoice financing",
+                                    "lease liabilities", "loan stocks",
+                                    "loans and borrowings", "revenue", "profit before tax", "loss before tax",
+                                    "Interest Income", "Finance Income",
+                                    "financial year ended", "Interest Income / Finance Income",
+                                    "Profit/(Loss) Before Tax",
+                                    "(Loss)/Profit Before Tax", "equity", "equity investment", "stocks", "bonds",
+                                    "real estate", "commodities", "collectibles", "mutual funds",
+                                    "exchange-traded funds",
+                                    "peer-to-peer lending", "cryptocurrencies", "hedge funds",
+                                    "investments in subsidiaries", "investments in associates",
+                                    "conventional banking", "conventional lending", "conventional banking and lending",
+                                    "gambling", "liquor and liquor-related activities",
+                                    "non-halal food", "non-halal beverage", "non-halal food and beverage",
+                                    "tobacco and tobacco-related activities",
+                                    "interest income from conventional accounts", "interest income from instrument",
+                                    "dividends from non-compliant investments", "Shariah non-compliant entertainment",
+                                    "share trading", "stockbroking business",
+                                    "rental received from non-compliant activities",
+                                    "rental received from Shariah non-compliant activities"],
+
+                       'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+                                           0, 0,
+                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
+                                           3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                                           4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+                                           5, 5, 5, 5]}
+
+    # print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
+
+    X = words_to_search['features']
+    y = words_to_search['is_cash_related']
+
+    logistic_model = LogisticSGDModel()
+    logistic_model.fit(X, y)
+
+    for i in range(2, len(first_column)):
+
+        if not isinstance(first_column.loc[i], str):
+            continue
+
+        features = first_column.loc[i]
+
+        predicted_value = logistic_model.predict([features])
+
+        if predicted_value == 2:
+            curr_col = df.loc[i]
+            result_df = pd.concat([result_df, curr_col], axis=1)
+
+        else:
+            continue
+
+    return result_df.T
+
+
+income_df = ExtractIncomeData(income_statement_df)
+# print(income_df)
+
+
 # Extract the data from the dataset related to debt from current & non-current liabilities
-def ExtractDebtData(df: pd.DataFrame):
+'''def ExtractDebtData(df: pd.DataFrame):
     cols1 = df.columns
     cols2 = df.loc[0]
     cols3 = df.loc[1]
@@ -389,7 +434,7 @@ cash_df = ExtractCashData(df)
 print()
 
 
-# Calculate the percentage of the cash against total assets
+# Calculate the percentage of the cash against total assets <= 33%
 def ComputeCashRatio(df: pd.DataFrame):
     cols0 = df.loc[0]
     cols1 = df.loc[1]
@@ -411,9 +456,11 @@ def ComputeCashRatio(df: pd.DataFrame):
 
     # Remove brackets from elements in all columns
     new_df = new_df.applymap(lambda x: str(x).replace('(', '').replace(')', '').replace(',', ''))
+    # print(new_df)
 
     total_assets = new_df.loc[total_assets_index]
     total_assets_list = np.array(total_assets.values.tolist())
+    # print(total_assets_list)
     total_assets_list = total_assets_list.astype(int)
 
     new_df = new_df.drop(total_assets_index)
@@ -438,7 +485,7 @@ print()
 # print(percentage_result)
 
 
-# Calculate the percentage of the debt against total assets
+# Calculate the percentage of the debt against total assets <= 33%
 def ComputeDebtRatio(df: pd.DataFrame, total_assets: np.ndarray):
     cols0 = df.loc[0]
     cols1 = df.loc[1]
@@ -548,6 +595,11 @@ def Extract5BenchMark(df: pd.DataFrame):
     return result_df.T
 
 
+benchmark_5 = Extract5BenchMark(df)
+# print(benchmark_5)
+print()
+
+
 def Extract20BenchMark(df: pd.DataFrame):
     cols1 = df.columns
     cols2 = df.loc[0]
@@ -625,3 +677,8 @@ def Extract20BenchMark(df: pd.DataFrame):
             continue
 
     return result_df.T
+
+
+benchmark_20 = Extract20BenchMark(df)
+# print(benchmark_20)
+'''
