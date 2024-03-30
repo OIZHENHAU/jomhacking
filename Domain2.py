@@ -66,9 +66,27 @@ def convertJsonToDF(json_df: json):
     return df
 
 
+def removeUnnamedColumns(df: pd.DataFrame):
+    df = df.drop(columns=df.columns[df.columns.str.contains('Unnamed')])
+    return df
+
+
 def convertDFToNumpy(df: pd.DataFrame):
     arr = df.values
     return arr
+
+
+def filterDFToNumpy(df: pd.DataFrame):
+    cols = df.columns
+    columns_to_remove = [col for col in df.columns if not 'Unnamed' in col]
+    df = df.fillna(0.0)
+    df = df.replace('-', 0.0)
+    # print(new_df)
+
+    # Remove brackets from elements in all columns
+    df = df.applymap(lambda x: str(x).replace('(', '').replace(')', '').replace(',', ''))
+    result_arr = convertDFToNumpy(df).astype(float)
+    return result_arr
 
 
 # Check if the current string contains in another string
@@ -130,7 +148,7 @@ def ReadTablePages(pdf: PyPDF2.PdfReader, arr: np.ndarray):
 
 # Get the data from the pdf file basd on pages.
 df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16, 17, 18, 19, 20]))
-json_str = df.to_json(orient='records')
+# json_str = df.to_json(orient='records')
 
 income_statement_df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16]))
 
@@ -207,11 +225,6 @@ words_to_search = {'features': ["cash and cash equivalent", "cash and bank balan
                                        5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
                                        5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]}
 
-# print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
-
-# words_df = pd.DataFrame(words_to_search)
-# words_df.to_excel('words.xlsx', index=False)
-
 words_to_search_df = pd.read_csv('words.csv')
 words_to_search = words_to_search_df.to_dict(orient='list')
 
@@ -263,6 +276,9 @@ json_income_df, json_revenue_df = ExtractIncomeData(income_statement_df, words_t
 # print(json_income_df)
 # print()
 # print(json_revenue_df)
+print()
+revenue_df = filterDFToNumpy(removeUnnamedColumns(convertJsonToDF(json_revenue_df)))
+print(revenue_df)
 print()
 
 
@@ -499,6 +515,10 @@ def Extract5BenchMark(df: pd.DataFrame, words_to_search: dict):
             continue
 
         features = first_column.loc[i]
+
+        if "total" in features.lower():
+            continue
+
         predicted_value = logistic_model.predict([features])
 
         if predicted_value == 4:
@@ -508,12 +528,14 @@ def Extract5BenchMark(df: pd.DataFrame, words_to_search: dict):
         else:
             continue
 
+    print("5 percent")
+    print(result_df.T)
     json_result_df = result_df.T.to_json(orient='records')
     return json_result_df
 
 
 json_benchmark_5 = Extract5BenchMark(df, words_to_search)
-print(json_benchmark_5)
+# print(json_benchmark_5)
 print()
 
 
@@ -535,6 +557,10 @@ def Extract20BenchMark(df: pd.DataFrame, words_to_search: dict):
             continue
 
         features = first_column.loc[i]
+
+        if "total" in features.lower():
+            continue
+
         predicted_value = logistic_model.predict([features])
 
         if predicted_value == 5:
@@ -544,9 +570,71 @@ def Extract20BenchMark(df: pd.DataFrame, words_to_search: dict):
         else:
             continue
 
+    print("20 percent")
+    print(result_df.T)
     json_result_df = result_df.T.to_json(orient='records')
     return json_result_df
 
 
 json_benchmark_20 = Extract20BenchMark(df, words_to_search)
 # print(json_benchmark_20)
+
+benchmark5_df = convertJsonToDF(json_benchmark_5)
+benchmark20_df = convertJsonToDF(json_benchmark_20)
+
+
+def compute5Benchmark(df: pd.DataFrame, revenue_df: np.ndarray):
+    cols = df.columns
+    columns_to_remove = [col for col in df.columns if not 'Unnamed' in col]
+    df = df.fillna(0.0)
+    df = df.replace('-', 0.0)
+    # print(new_df)
+
+    # Remove brackets from elements in all columns
+    df = df.applymap(lambda x: str(x).replace('(', '').replace(')', '').replace(',', ''))
+
+    arr_benchmark5 = convertDFToNumpy(removeUnnamedColumns(df)).astype(float)
+    # print(arr_benchmark5)
+    # print()
+    sum_array_benchmark5 = np.sum(arr_benchmark5, axis=0)
+    # print(sum_array_benchmark5)
+    # print()
+    # print(revenue_df)
+
+    percentage_result = sum_array_benchmark5 / revenue_df * 100
+    # print(percentage_result)
+    return percentage_result
+
+
+percent_5benchmark = compute5Benchmark(benchmark5_df, revenue_df)
+
+
+# print(percent_5benchmark)
+
+
+def compute20Benchmark(df: pd.DataFrame, revenue_df: np.ndarray):
+    cols = df.columns
+    columns_to_remove = [col for col in df.columns if not 'Unnamed' in col]
+    df = df.fillna(0.0)
+    df = df.replace('-', 0.0)
+    # print(new_df)
+
+    # Remove brackets from elements in all columns
+    df = df.applymap(lambda x: str(x).replace('(', '').replace(')', '').replace(',', ''))
+
+    arr_benchmark20 = convertDFToNumpy(removeUnnamedColumns(df)).astype(float)
+    # print(arr_benchmark20)
+    # print()
+    sum_array_benchmark20 = np.sum(arr_benchmark20, axis=0)
+    # print(sum_array_benchmark20)
+    # print()
+    # print(revenue_df)
+    # print()
+
+    percentage_result = sum_array_benchmark20 / revenue_df * 100
+    # print(percentage_result)
+    return percentage_result
+
+
+percent_20benchmark = compute20Benchmark(benchmark20_df, revenue_df)
+# print(percent_20benchmark)
