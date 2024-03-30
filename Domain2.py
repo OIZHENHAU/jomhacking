@@ -119,7 +119,7 @@ def ReadTablePages(pdf: PyPDF2.PdfReader, arr: np.ndarray):
 
 # Get the data from the pdf file basd on pages.
 df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16, 17, 18, 19, 20]))
-print(df)
+# print(df)
 income_statement_df = ReadTablePages("Annual_Audited_Accounts.pdf", np.array([16]))
 
 
@@ -147,7 +147,7 @@ words_to_search = {'features': ["cash and cash equivalent", "cash and bank balan
                                 "other cash equivalents",
                                 "deposits", "investment in cash funds", "resale agreement", "short term deposits",
                                 "short term funds",
-                                "short term investments", "unit trust funds", "total assets", "assets",
+                                "short term investments", "unit trust funds", "total assets", "total-assets",
                                 "borrowing", "short term borrowings",
                                 "bank borrowings",
                                 "bank overdrafts", "bankers' acceptance", "bill discounting", "bill payables",
@@ -158,15 +158,17 @@ words_to_search = {'features': ["cash and cash equivalent", "cash and bank balan
                                 "hire purchase payables",
                                 "invoice financing",
                                 "lease liabilities", "loan stocks",
-                                "loans and borrowings", "revenue", "profit before tax", "loss before tax",
+                                "loans and borrowings", "profit before tax", "loss before tax",
                                 "Interest Income", "Finance Income",
                                 "financial year ended", "Interest Income / Finance Income",
                                 "Profit/(Loss) Before Tax",
-                                "(Loss)/Profit Before Tax", "equity", "equity investment", "stocks", "bonds",
+                                "(Loss)/Profit Before Tax", "Revenue",
+                                "bonds",
                                 "real estate", "commodities", "collectibles", "mutual funds",
-                                "exchange-traded funds",
                                 "peer-to-peer lending", "cryptocurrencies", "hedge funds",
                                 "investments in subsidiaries", "investments in associates",
+                                "deferred tax assets", "non-current tax assets", "assets", "right-of-use assets",
+                                "non-current assets",
                                 "conventional banking", "conventional lending", "conventional banking and lending",
                                 "gambling", "liquor and liquor-related activities",
                                 "non-halal food", "non-halal beverage", "non-halal food and beverage",
@@ -175,22 +177,39 @@ words_to_search = {'features': ["cash and cash equivalent", "cash and bank balan
                                 "dividends from non-compliant investments", "Shariah non-compliant entertainment",
                                 "share trading", "stockbroking business",
                                 "rental received from non-compliant activities",
-                                "rental received from Shariah non-compliant activities"],
+                                "rental received from Shariah non-compliant activities",
+                                "stocks", "equities", "securities", "shares", "stock market", "trading", "investors",
+                                "Portfolio management", "stockbrokers", "investment banking", "brokerage firm",
+                                "Asset management", "wealth management", "trading platform", "haram income",
+                                "Unlawful income", "Alcohol-related income", "gambling income", "immoral income",
+                                "Unethical investment", "halal income", "pornography-related income",
+                                "islamic insurance income", "halal investment alternatives", "Ethical investment",
+                                "Socially responsible investing", "Shariah-compliant investing", "equity investment"],
 
-                   'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                                       0, 0, 0,
-                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
-                                       3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                   'is_cash_related': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                       0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                       2, 2, 2, 2, 2, 2, 2,
+                                       3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
                                        4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-                                       5, 5, 5, 5]}
+                                       5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+                                       5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]}
+
+
+# print(len(words_to_search['features']), len(words_to_search['is_cash_related']))
+
+# words_df = pd.DataFrame(words_to_search)
+# words_df.to_excel('words.xlsx', index=False)
+
+words_to_search_df = pd.read_csv('words.csv')
+words_to_search = words_to_search_df.to_dict(orient='list')
 
 
 # Extract the data related to income from the dataset
 def ExtractIncomeData(df: pd.DataFrame, words_to_search: dict):
     cols1 = df.columns
     result_df = pd.DataFrame(columns=cols1).T
-    revenue_df = pd.DataFrame()
-    # print(pd.concat([cols2, cols3], axis=1).T)
+    revenue_df = pd.DataFrame(columns=cols1).T
     first_column = df.iloc[:, 0]
     # print(result_df)
 
@@ -208,7 +227,8 @@ def ExtractIncomeData(df: pd.DataFrame, words_to_search: dict):
         features = first_column.loc[i]
 
         if is_almost_match(features, "revenue"):
-            revenue_df = df.loc[i]
+            temp = df.loc[i]
+            revenue_df = pd.concat([revenue_df, temp], axis=1)
             # print(revenue_df)
             result_df = pd.concat([result_df, revenue_df], axis=1)
             continue
@@ -222,15 +242,14 @@ def ExtractIncomeData(df: pd.DataFrame, words_to_search: dict):
         else:
             continue
 
-    return result_df.T, revenue_df
+    return result_df.T, revenue_df.T
 
 
 income_df, revenue_df = ExtractIncomeData(income_statement_df, words_to_search)
-'''print(income_df)
+# print(income_df)
+# print()
+# print(revenue_df)
 print()
-print(revenue_df)
-print()
-'''
 
 
 # Extract the data from the dataset related to debt from current & non-current liabilities
@@ -343,7 +362,7 @@ def ExtractCashData(df: pd.DataFrame, words_to_search: dict):
 
 
 cash_df = ExtractCashData(df, words_to_search)
-# print(cash_df)
+print(cash_df)
 # LOL
 print()
 
@@ -386,13 +405,8 @@ def ComputeCashRatio(df: pd.DataFrame):
 
 
 percentage_result, total_assets_list = ComputeCashRatio(cash_df)
-
 # print(percentage_result)
 print()
-
-
-# print(total_assets_list)
-# print()
 
 
 # Calculate the percentage of the debt against total assets <= 33%

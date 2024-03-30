@@ -234,15 +234,55 @@ print(rounded_array_2d)
 
 # Creating a sample DataFrame
 data = {
-    'Name': [14, 23, 7, 19],
-    'Age': [28, 34, 29, 32],
-    'City': [53, 21, 16, 11]
+    'Name': ["(14)", "23", "7", "19"],
+    'Age': ["28", "34", "29", "32"],
+    'City': ["53", "(21)", "16", "11"]
 }
 
 df = pd.DataFrame(data)
 print(df)
+print()
+
+df1 = {'Revenue': ["50", "50", "50"]}
+df1 = pd.DataFrame(df1)
+df1_array = np.array(df1.values.tolist())
+df1_array = df1_array.astype(float)
+print(df1_array)
+print()
+
+
+def contains_brackets(row):
+    for element in row:
+        # print(element)
+        if '(' in element and ')' in element:
+            return True
+    return False
+
+
+for index, row in df.iloc[0:].iterrows():
+
+    if contains_brackets(row):
+        row = row.map(lambda x: str(x).replace('(', '-').replace(')', '').replace(',', ''))
+        row_array = np.array(row.values.tolist()).astype(float)
+        df1_array = df1_array - row_array
+
+print(df1_array)
 
 # Converting the DataFrame to JSON
 json_str = df.to_json(orient='records')
-
 print(json_str)
+
+
+data = {
+    'A': [1, 2, 3],
+    'B': [4, 5, 6]
+}
+
+print(data['A'])
+
+df = pd.DataFrame(data)
+
+print(df['A'])
+
+# Export the DataFrame to an Excel file
+# df.to_excel('output.xlsx', index=False)
